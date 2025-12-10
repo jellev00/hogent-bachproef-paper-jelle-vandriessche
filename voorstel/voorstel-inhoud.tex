@@ -15,22 +15,98 @@
 \section{Inleiding}%
 \label{sec:inleiding}
 
-Waarover zal je bachelorproef gaan? Introduceer het thema en zorg dat volgende zaken zeker duidelijk aanwezig zijn:
+\subsection{Probleemstelling}
+\label{sec:Probleemstelling}
 
+Softwareprojecten binnen bedrijven en organisaties maken gebruik van talrijke externe bibliotheken, frameworks en tools, de zogenaamde \emph{dependencies}. Deze dependencies worden voortdurend bijgewerkt om nieuwe functionaliteiten, verbeterde prestaties en vooral beveiligingspatches aan te bieden \parencite{Pashchenko2018}.
+
+Het manueel opvolgen van deze updates vormt echter een groot probleem in softwareontwikkeling. Ontwikkelaars moeten regelmatig changelogs doorzoeken, compatibiliteit controleren en inschatten welke updates veilig kunnen worden doorgevoerd, wat in de praktijk veel tijd vraagt en vaak wordt uitgesteld \parencite{Pashchenko2018,Behutiye2024}.
+
+Onderzoek toont aan dat veel softwareprojecten hun dependencies niet systematisch bijhouden, waardoor een aanzienlijk deel verouderd raakt. Pashchenko et al.\ \parencite{Pashchenko2018} stellen bijvoorbeeld dat een belangrijk percentage kwetsbare dependencies relatief eenvoudig opgelost kan worden door een update, maar dat dit in de praktijk niet gebeurt wegens tijdsdruk en gebrek aan overzicht.
+
+Wanneer het updateproces niet systematisch gebeurt, stapelen onderhoudstaken zich op, waardoor het steeds moeilijker en tijdrovender wordt om de software up-to-date te houden. Dit fenomeen staat bekend als \emph{technische schuld} (technical debt): de achterstand die ontstaat doordat noodzakelijke verbeteringen of updates te lang worden uitgesteld, wat leidt tot hogere onderhoudskosten en complexiteit op lange termijn \parencite{Behutiye2024,Ruiz2024}. Empirisch onderzoek bevestigt dat technische schuld binnen bedrijven reële negatieve gevolgen heeft voor productiviteit en softwarekwaliteit \parencite{Chalmers2020}.
+
+Veel organisaties gebruiken al geautomatiseerde dependencybots, zoals Dependabot of Renovate, die pull requests aanmaken zodra er nieuwe versies beschikbaar zijn \parencite{Erlenhov2022}. Deze oplossingen helpen om updates te detecteren, maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een pull request gemerged kan worden \parencite{Erlenhov2022}.
+
+Binnen het bedrijf waar deze bachelorproef wordt uitgevoerd, leiden deze manuele analyses tot extra werkdruk voor een specifiek ontwikkelteam, namelijk het kleine kernteam dat verantwoordelijk is voor platform- en dependencybeheer over meerdere projecten en repositories heen. Daardoor gaat er disproportioneel veel tijd naar het nakijken van dependency-updates, ten koste van andere ontwikkeltaken.
+
+Deze bachelorproef richt zich daarom op het ontwikkelen van een AI-gedreven systeem dat bovenop bestaande tooling zoals Dependabot draait. Het systeem leest automatisch de door Dependabot aangemaakte pull requests in, analyseert de bijhorende changelogs en release notes, vat de essentie in begrijpelijke taal samen en ondersteunt het nemen van een beslissing (bijvoorbeeld mergen, uitstellen of extra acties uitvoeren). De tool moet onder andere kunnen controleren welke dependency wordt bijgewerkt, welk type update het betreft (patch, minor, major), wat de belangrijkste wijzigingen zijn en moet, indien gewenst, automatisch een pull request goedkeuren of sluiten volgens vooraf gedefinieerde regels.
+
+Op die manier kan het updateproces slimmer, sneller en inzichtelijker worden gemaakt voor een duidelijk afgebakende doelgroep: het kleine kernteam dat binnen het bedrijf verantwoordelijk is voor dependencybeheer en platformonderhoud, in plaats van alle ontwikkelteams in het algemeen.
+
+\subsection{Onderzoeksvraag}
+\label{sec:Onderzoeksvraag}
+
+Om het probleem van handmatig dependencybeheer en beperkte context bij updates op te lossen, wordt de volgende hoofdonderzoeksvraag geformuleerd:
+
+\begin{quote}
+  Hoe kan een AI-gedreven agent worden ingezet om dependency-updates uit bestaande tools voor automatisch dependencybeheer te analyseren en te beheren, zodat het kernteam dat verantwoordelijk is voor platform- en dependencybeheer efficiënter en met minder handmatig werk dependency-updates kan verwerken?
+\end{quote}
+
+Hieruit vloeien de volgende deelvragen voort.
+
+\subsubsection{Deelvragen voor het beter begrijpen van het probleem}
+\label{sec:Deelvragen voor het beter begrijpen van het probleem}
+
+\begin{enumerate}
+  \item Wat zijn de belangrijkste uitdagingen en risico's bij het huidige, overwegend manuele dependency management voor het kernteam dat verantwoordelijk is voor platform- en dependencybeheer?
+  \item Welke bestaande tools en oplossingen voor automatisch dependencybeheer worden vandaag gebruikt, en welke sterke punten en beperkingen hebben deze oplossingen in de context van dit bedrijf?
+  \item Hoe leidt ophopende technische schuld op het vlak van dependency-updates ertoe dat er steeds meer tijd en inspanning nodig zijn voor het controleren en bijwerken van dependencies binnen het bedrijf?
+\end{enumerate}
+
+\subsubsection{Deelvragen richting de oplossing}
+\label{sec:Deelvragen richting de oplossing}
+
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item Hoe kunnen AI-agents en workflow-automatiseringsplatformen worden ingezet om informatie uit changelogs, release notes en dependency-pull-requests automatisch te interpreteren en in begrijpelijke vorm te communiceren naar het verantwoordelijke kernteam?
+  \item Welke functionele en niet-functionele vereisten moet een platform voor AI-gestuurd dependencybeheer vervullen, bijvoorbeeld op het vlak van integratie met versiebeheersystemen en registries, uitbreidbaarheid, beheer van regels en policies, auditlogging en performantie?
+  \item In welke mate voldoen geselecteerde AI-agent- of workflowplatformen aan deze vereisten, en hoe goed kunnen zij geïntegreerd worden in een proof-of-concept voor dependency management in de context van het bedrijf?
+\end{enumerate}
+
+\subsection{Onderzoeksdoelstelling}
+\label{sec:Onderzoeksdoelstelling}
+
+Het doel van dit onderzoek is om een proof-of-concept te ontwikkelen van een webapplicatie die automatisch dependency-updates detecteert, analyseert en communiceert via een geïntegreerde AI-agent, en om na te gaan in welke mate geselecteerde AI-agent- of workflowplatformen voldoen aan de vereisten van het bedrijf voor geautomatiseerd dependencybeheer. Eerder onderzoek toont aan dat AI-technieken succesvol kunnen worden ingezet binnen onderhoudstaken zoals changelog-analyse en code review, wat aantoont dat deze toepassing haalbaar en relevant is \parencite{Behutiye2024,Joshi2025,Kim2024,Zhu2025}.
+
+Concreet zal de oplossing:
 \begin{itemize}
-  \item kaderen thema
-  \item de doelgroep
-  \item de probleemstelling en (centrale) onderzoeksvraag
-  \item de onderzoeksdoelstelling
+  \item per project de gebruikte dependencies bijhouden;
+  \item automatisch nagaan of er nieuwe versies beschikbaar zijn via publieke registries (zoals npm, Maven Central, NuGet en PyPI) of via bestaande tools zoals Dependabot;
+  \item changelogs, release notes en dependency-pull-requests analyseren met behulp van een AI-agent;
+  \item het verantwoordelijke kernteam informeren over de aard en impact van de updates, inclusief een korte, begrijpelijke samenvatting en een indicatie of de update veilig lijkt om door te voeren;
+  \item regels implementeren om, waar mogelijk, automatisch een pull request goed te keuren of te sluiten, zodat het kernteam minder manuele beslissingen hoeft te nemen;
+  \item geselecteerde platformen beoordelen op geschiktheid op basis van gebruiksgemak, integratiemogelijkheden, onderhoudbaarheid, performantie en mate waarin zij voldoen aan de gedefinieerde vereisten.
 \end{itemize}
 
-Denk er aan: een typische bachelorproef is \textit{toegepast onderzoek}, wat betekent dat je start vanuit een concrete probleemsituatie in bedrijfscontext, een \textbf{casus}. Het is belangrijk om je onderwerp goed af te bakenen: je gaat voor die \textit{ene specifieke probleemsituatie} op zoek naar een goede oplossing, op basis van de huidige kennis in het vakgebied.
+De tool zal opgebouwd worden met \texttt{Next.js} als frontend, een C\# (.NET) of Java (Spring Boot) backend, en een database (PostgreSQL, MongoDB of Supabase) voor gebruikers- en projectbeheer. Het onderzoek resulteert in:
+\begin{itemize}
+  \item een prototype (demo) dat de werking van het systeem aantoont binnen een of enkele projecten van het bedrijf;
+  \item een evaluatie van de toegevoegde waarde van AI bij dependency management voor het specifieke kernteam;
+  \item een aanbeveling welk type platform, en eventueel welke concrete technologie, het meest geschikt is voor verdere toepassing binnen het bedrijf.
+\end{itemize}
 
-De doelgroep moet ook concreet en duidelijk zijn, dus geen algemene of vaag gedefinieerde groepen zoals \emph{bedrijven}, \emph{developers}, \emph{Vlamingen}, enz. Je richt je in elk geval op it-professionals, een bachelorproef is geen populariserende tekst. Eén specifiek bedrijf (die te maken hebben met een concrete probleemsituatie) is dus beter dan \emph{bedrijven} in het algemeen.
+\subsection{Opzet van deze bachelorproef}
+\label{sec:Opzet van deze bachelorproef}
 
-Formuleer duidelijk de onderzoeksvraag! De begeleiders lezen nog steeds te veel voorstellen waarin we geen onderzoeksvraag terugvinden.
+De bachelorproef volgt een klassieke onderzoeksstructuur en is als volgt opgebouwd:
 
-Schrijf ook iets over de doelstelling. Wat zie je als het concrete eindresultaat van je onderzoek, naast de uitgeschreven scriptie? Is het een proof-of-concept, een rapport met aanbevelingen, \ldots Met welk eindresultaat kan je je bachelorproef als een succes beschouwen?
+\begin{itemize}
+  \item \textbf{Hoofdstuk 1 -- Inleiding en probleemstelling:}
+        Dit hoofdstuk beschrijft de context, de probleemstelling, de onderzoeksvragen en de doelstellingen van de bachelorproef.
+
+  \item \textbf{Hoofdstuk 2 -- Literatuurstudie:}
+        In dit hoofdstuk wordt de relevante literatuur rond dependency management, bestaande tools en oplossingen, technische schuld en AI-agent-frameworks en workflow-automatisering geanalyseerd.
+
+  \item \textbf{Hoofdstuk 3 -- Methodologie en implementatie:}
+        Dit hoofdstuk bespreekt de onderzoeksaanpak, het ontwerp van de systeemarchitectuur, de selectie van platformen en de implementatie van de proof-of-concept.
+
+  \item \textbf{Hoofdstuk 4 -- Verwachte resultaten:}
+        In dit hoofdstuk worden de verwachte resultaten van de implementatie en experimenten gepresenteerd.
+
+  \item \textbf{Hoofdstuk 5 -- Verwachte conclusie:}
+        Dit hoofdstuk formuleert de verwachte belangrijkste bevindingen op basis van de onderzoeksvragen
+\end{itemize}
 
 %---------- Stand van zaken ---------------------------------------------------
 
