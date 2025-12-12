@@ -8,6 +8,10 @@
 % Let op: kan enkel na toestemming van de bachelorproefcoördinator!
 \documentclass{hogent-article}
 
+% Packages voor figuren
+\usepackage{graphicx}
+\usepackage{float}
+
 % Invoegen bibliografiebestand
 \addbibresource{voorstel.bib}
 
@@ -57,7 +61,9 @@
 \begin{document}
 
 \begin{abstract}
-  Hier schrijf je de samenvatting van je voorstel, als een doorlopende tekst van één paragraaf. Let op: dit is geen inleiding, maar een samenvattende tekst van heel je voorstel met inleiding (voorstelling, kaderen thema), probleemstelling en centrale onderzoeksvraag, onderzoeksdoelstelling (wat zie je als het concrete resultaat van je bachelorproef?), voorgestelde methodologie, verwachte resultaten en meerwaarde van dit onderzoek (wat heeft de doelgroep aan het resultaat?).
+  Deze bachelorproef onderzoekt hoe een AI-gedreven agent kan worden ingezet om softwaredependencies automatisch te analyseren en te beheren in combinatie met een dependencybot. Vanuit de vastgestelde problematiek — veel manueel werk, verhoogde technische schuld en beperkte context bij dependency-updates — wordt een proof-of-concept webapplicatie ontwikkeld die pull requests, changelogs en release notes automatisch uitleest, samenvat en van beslissingsvoorstellen voorziet voor een klein kernteam dat platform- en dependencybeheer opneemt.
+
+  De oplossing wordt opgebouwd met een moderne webstack (Next.js, .NET/Java en een relationele of NoSQL-database) en integreert met publieke package registries en een eigen dependencybot om updates te detecteren. Via een vergelijkende studie van geselecteerde AI-agent- en workflowplatformen wordt onderzocht in welke mate deze voldoen aan gedefinieerde functionele en niet-functionele vereisten, zoals integratiemogelijkheden, onderhoudbaarheid en performantie. Verwacht wordt dat de aanpak de manuele beoordelingslast merkbaar vermindert, de zichtbaarheid van technische schuld rond dependencies verhoogt en een herhaalbaar proces oplevert dat als basis kan dienen voor verdere uitrol binnen de organisatie.
 \end{abstract}
 
 \tableofcontents

@@ -132,7 +132,7 @@ Om de handmatige last rond dependencybeheer te verlagen, zetten veel projecten d
 
 Hun resultaten tonen dat projecten vaak experimenteren met meerdere bots en regelmatig wisselen, onder meer door problemen met ruis (te veel pull requests), beperkte configureerbaarheid en moeilijkheden om de impact van voorgestelde updates goed te begrijpen.\autocite{Erlenhov2022} Hoewel dependencybots het detecteren en aanmaken van update-pull-requests automatiseren, blijft de inhoudelijke beoordeling van changelogs, compatibiliteit en risico's grotendeels bij ontwikkelaars liggen, wat aansluit bij de probleemstelling van deze bachelorproef.\autocite{Erlenhov2022,Pashchenko2018}
 
-\subsection{AI, agents en workflow-automatisering}
+\subsection{AI, agents en workflow automatisering}
 
 Recente literatuur verkent hoe AI-agents en multi-agentframeworks kunnen worden ingezet om complexe taken in softwareontwikkeling en data-intensieve workflows te coördineren.\autocite{Joshi2025,Kim2024,Zhu2025} Joshi biedt een overzicht van autonome systemen en collaboratieve AI-agentframeworks en benadrukt dat zulke agents vooral nuttig zijn in scenario's met veel herhalende beslissingen op basis van tekstuele en gestructureerde input, zoals logs, notificaties en rapporten.\autocite{Joshi2025}
 
@@ -153,24 +153,126 @@ Deze bachelorproef positioneert zich precies in deze niche door een AI-gestuurde
 \section{Methodologie}
 \label{sec:methodologie}
 
-Hier beschrijf je hoe je van plan bent het onderzoek te voeren. Welke onderzoekstechniek ga je toepassen om elk van je onderzoeksvragen te beantwoorden? Gebruik je hiervoor literatuurstudie, interviews met belanghebbenden (bv.~voor requirements-analyse), experimenten, simulaties, vergelijkende studie, risico-analyse, PoC, \ldots?
+Dit onderzoek volgt hoofdzakelijk de opzet van een vergelijkende studie met proof-of-concept, aangevuld met literatuuronderzoek en een beperkte requirements-analyse bij een bedrijfscontext. Het doel is om enerzijds het probleem en de oplossingsruimte rond dependencybeheer in kaart te brengen, en anderzijds een prototype te bouwen en technisch te evalueren binnen een realistische ontwikkelomgeving.
 
-Valt je onderwerp onder één van de typische soorten bachelorproeven die besproken zijn in de lessen Research Methods (bv.\ vergelijkende studie of risico-analyse)? Zorg er dan ook voor dat we duidelijk de verschillende stappen terug vinden die we verwachten in dit soort onderzoek!
+\subsection{Onderzoeksaanpak per onderzoeksvraag}
+\label{sec:onderzoeksaanpak}
 
-Vermijd onderzoekstechnieken die geen objectieve, meetbare resultaten kunnen opleveren. Enquêtes, bijvoorbeeld, zijn voor een bachelorproef informatica meestal \textbf{niet geschikt}. De antwoorden zijn eerder meningen dan feiten en in de praktijk blijkt het ook bijzonder moeilijk om voldoende respondenten te vinden. Studenten die een enquête willen voeren, hebben meestal ook geen goede definitie van de populatie, waardoor ook niet kan aangetoond worden dat eventuele resultaten representatief zijn.
+Om de eerste groep deelvragen, die gericht zijn op het beter begrijpen van het probleem, te beantwoorden, wordt een systematische literatuurstudie uitgevoerd rond dependency management, kwetsbare dependencies, technische schuld en bestaande dependencybots. Hierbij wordt voornamelijk gebruikgemaakt van wetenschappelijke artikels, technische rapporten en documentatie van industriële tools.
 
-Uit dit onderdeel moet duidelijk naar voor komen dat je bachelorproef ook technisch voldoen\-de diepgang zal bevatten. Het zou niet kloppen als een bachelorproef informatica ook door bv.\ een student marketing zou kunnen uitgevoerd worden.
+Voor de deelvragen die gericht zijn op het definiëren van de oplossing, wordt een combinatie van requirements-analyse, proof-of-concept-ontwikkeling en technische experimenten ingezet. De requirements-analyse gebeurt via gesprekken met de betrokken medewerkers binnen het bedrijf (vooral leden van het kernteam dat platform- en dependencybeheer opneemt), gericht op het expliciteren van:
+\begin{itemize}
+  \item functionele eisen (detectie van updates, analyse en samenvatting van changelogs en release notes).;
+  \item niet-functionele eisen (performantie, integratiemogelijkheden, onderhoudbaarheid, beheer van regels en policies, auditlogging).
+\end{itemize}
+De resultaten van deze analyse vormen de basis voor een set concrete evaluatiecriteria die later gebruikt worden om de geselecteerde AI-agent- en workflowplatformen te beoordelen.
 
-Je beschrijft ook al welke tools (hardware, software, diensten, \ldots) je denkt hiervoor te gebruiken of te ontwikkelen.
+\subsection{Proof-of-concept en technische implementatie}
+\label{sec:poc-implementatie}
 
-Probeer ook een tijdschatting te maken. Hoe lang zal je met elke fase van je onderzoek bezig zijn en wat zijn de concrete \emph{deliverables} in elke fase?
+De kern van het onderzoek bestaat uit het bouwen van een proof-of-concept webapplicatie die:
+\begin{itemize}
+  \item afhankelijkheden per project bijhoudt en koppelt aan informatie uit publieke registries;
+  \item inkomende dependency-updates inleest en de bijbehorende changelogs en release notes verwerkt;
+  \item via een AI-agent tekstuele samenvattingen en beslissingsvoorstellen genereert;
+  \item het kernteam een overzicht biedt van openstaande updates, prioriteiten en voorgestelde acties.
+\end{itemize}
+
+Technisch wordt de proof-of-concept gerealiseerd met:
+\begin{itemize}
+  \item een \texttt{Next.js}-frontend voor de gebruikersinterface;
+  \item een backend in C\# (.NET) of Java (Spring Boot), afhankelijk van de voorkeuren en standaardtechnologieën binnen het bedrijf;
+  \item een database-oplossing (PostgreSQL, MongoDB of Supabase) voor opslag van gebruikers, projecten, dependency-informatie en logging.
+\end{itemize}
+
+De AI-agentlaag wordt eerst in een basisopzet gerealiseerd (bijvoorbeeld één gekozen platform of framework), waarbij de focus ligt op het correct interpreteren en samenvatten van changelogs en release notes. Daarna wordt onderzocht in welke mate alternatieve agent- of workflowplatformen kunnen worden ingezet om dezelfde functionaliteit te ondersteunen, zodat een zinvolle vergelijking mogelijk is.
+
+\subsection{Vergelijkende evaluatie van platformen}
+\label{sec:vergelijkende-evaluatie}
+
+Om de onderzoeksvraag rond de geschiktheid van verschillende AI-agent- en workflowplatformen te beantwoorden, wordt een vergelijkende evaluatie uitgewerkt. Op basis van de eerder gedefinieerde vereisten worden meetbare criteria opgesteld, zoals:
+\begin{itemize}
+  \item integratiemogelijkheden met Git-repositories en externe APIs;
+  \item complexiteit van configuratie en ontwikkelervaring (bijvoorbeeld aantal stappen om een eerste workflow op te zetten);
+  \item onderhoudbaarheid (structuur van workflows, versiebeheer, herbruikbaarheid van componenten);
+  \item performantie-indicatoren, zoals doorlooptijd voor het verwerken van een set voorbeelden.
+\end{itemize}
+
+Er wordt een reeks gestandaardiseerde scenario's gedefinieerd (bijvoorbeeld een set representatieve dependency-updates met verschillende types wijzigingen en risico's). Voor elk geselecteerd platform wordt dezelfde set scenario's geïmplementeerd en uitgevoerd, zodat de resultaten langs de gedefinieerde criteria objectief kunnen worden vergeleken. De uitkomsten van deze experimenten worden gebruikt om de sterktes en zwaktes van elk platform in de context van dit specifieke probleemdomein te identificeren.
+
+
+\subsection{Tools en middelen}
+\label{sec:tools-middelen}
+
+Voor de praktische uitvoering van het onderzoek wordt gebruikgemaakt van:
+\begin{itemize}
+  \item versiebeheer (bijvoorbeeld GitHub) voor de codebasis en configuratiebestanden;
+  \item een zelf gemaakte dependencybot als bron van automatische updates;
+  \item publieke registries (npm, Maven Central, NuGet, PyPI) voor versie-informatie en metadata over dependencies;
+  \item gekozen AI-agent- of workflowplatformen voor de implementatie van de AI-gedreven analysetaken;
+  \item standaardontwikkeltools (IDE, containerisatie, CI/CD) voor het bouwen, testen en uitrollen van de proof-of-concept.
+\end{itemize}
+
+\subsection{Fasering en tijdsplanning}
+\label{sec:fasering-tijdsplanning}
+
+Het onderzoek wordt opgedeeld in opeenvolgende fasen met bijhorende deliverables,
+zoals weergegeven in Figuur~\ref{fig:gantt}.
+
+\begin{itemize}
+  \item \textbf{Fase 1 -- Oriëntatie en literatuurstudie (reeds lopend):}
+        in deze fase worden de probleemstelling verfijnd, relevante bronnen verzameld en geanalyseerd, en potentiële co-promotoren en bedrijfscontexten verkend. Deliverables: onderzoeksvoorstel, voorlopige literatuurstudie, bevestiging of afwijzing van co-promotor(en).
+
+  \item \textbf{Fase 2 -- Requirements-analyse en architectuurontwerp:}
+        gesprekken met het betrokken bedrijf om de concrete requirements en context te verduidelijken, uitwerking van use-cases en systeemarchitectuur van de proof-of-concept. Deliverables: requirementsdocument, architectuurschets, lijst van evaluatiecriteria voor de platformen.
+
+  \item \textbf{Fase 3 -- Implementatie van de proof-of-concept:}
+        ontwikkeling van frontend, backend en database, integratie met dependencybot en registries, en eerste versie van de AI-agent voor changelog- en release note-analyse. Deliverables: werkend prototype, technische documentatie, testcases en voorbeelddata (updates, changelogs).
+
+  \item \textbf{Fase 4 -- Vergelijkende evaluatie en experimenten:}
+        implementatie van de gestandaardiseerde scenario's op de geselecteerde platformen, uitvoeren van metingen (bijvoorbeeld doorlooptijd, configuratie-inspanning) en analyse van de resultaten. Deliverables: experimenteel protocol, ruwe meetdata, geanalyseerde resultaten en tabellen/grafieken.
+
+  \item \textbf{Fase 5 -- Rapportering en verwachte conclusie:}
+        uitwerken van de uiteindelijke bachelorproef, formuleren van conclusies en aanbevelingen op basis van de resultaten, en reflectie op eventuele verschillen tussen de verwachte en daadwerkelijke uitkomsten. Deliverables: volledige bachelorproef, presentatie- en demonstratiemateriaal.
+\end{itemize}
 
 %---------- Verwachte resultaten ----------------------------------------------
 \section{Verwacht resultaat}
 \label{sec:verwachte_resultaten}
 
+Op basis van de probleemstelling en onderzoeksdoelstelling wordt verwacht dat het ontwikkelde proof-of-concept in staat zal zijn om dependency updates automatisch te detecteren, te analyseren en in een compacte, begrijpelijke vorm te communiceren naar het verantwoordelijke kernteam. Concreet wordt verwacht dat de AI-agent changelogs, release notes kan omzetten naar heldere samenvattingen met een indicatie van het type wijziging (beveiligingsfix, bugfix, nieuwe functionaliteit) en de vermoedelijke impact op het project.
 
+Verder wordt verwacht dat het systeem de werklast voor het kernteam merkbaar reduceert door een deel van de beslissingen rond ``veilige'' updates te automatiseren. Denk daarbij aan scenario's waarin kleine, backward compatible updates te updates (bijvoordbeeld patch- of beperkte minor-releases) automatisch kunnen worden goedgekeurd of voorbereid voor merge, terwijl potentieel risicovolle major-updates expliciet gemarkeerd worden voor manuele review. Indien er voldoende data verzameld kan worden uit tests of logbestanden, worden bovendien verwacht dat er minimaal een eerste, kwantitatieve inschatting kan worden gemaakt van de tijdswinst (bijvoorbeeld aantal manuele reviews per maand, gemiddelde doorlooptijd per update) in vergelijking met de situatie voor de invoering van de tool.
+
+De doelgroep van dit onderzoek, namelijk het kleine kernteam dat binnen het bedrijf verantwoordelijk is voor dependencybeheer en platformonderhoud, haalt hieruit meerwaarde doordat zij:
+
+\begin{itemize}
+  \item sneller kunnen bepalen welke updates prioriteit hebben en welke zonder veel risico kunnen worden doorgevoerd;
+  \item minder tijd verliezen aan het doorpluizen van changelogs en release notes;
+  \item een beter overzicht krijgen van de actuele staat van dependencies en de bijhorende technische schuld;
+  \item een herhaalbaar proces in handen krijgen dat later opgeschaald kan worden naar andere teams of projecten binnen de organisatie.
+\end{itemize}
 
 %---------- Verwachte conclusies ----------------------------------------------
 \section{Verwacht conclusie}
 \label{sec:verwachte_conclusies}
+
+Op basis van de literatuur en de beoogde proof-of-concept wordt verwacht dat de bachelorproef zal aantonen dat een AI-gestuurde laag de manuele beoordelinglast rond dependency-updates kan verlagen, zonder daarbij de controle volledig uit handen te geven. Verwacht wordt dat de resultaten zullen aangeven dat het combineren van automatische detectie met een AI-agent voor interpretatie en samenvatting een efficiënter en transparanter updateproces oplevert voor het kernteam.
+
+Verder wordt verwacht dat uit de evaluatie van de geselecteerde AI-agent of workflowplatformen zal blijken dat niet een enkel platform op alle criteria domineert, maar dat er duidelijke verschillen zijn op het vlak van integratiemogelijkheden, gebruiksgemak, onderhoudbaarheid en performantie. De verwachte conclusie is dat op basis van de gedefinieerde vereisten een onderbouwde aanbeveling kan worden geformuleerd voor het meest geschikte platform binnen de context van het betrokken bedrijf, en dat de inzet van een AI-agent een zinvolle stap is in het beperken van technische schuld rond dependencies. Indien de uiteindelijke resultaten afwijken van deze verwachtingen, biedt dit een interessante basis om te analyseren welke aanames niet klopten en welke randvoorwaarden cruciaal zijn voor het succes van AI-ondersteund dependencybeheer.
+
+
+\clearpage
+
+%---------- Figuren ----------------------------------------------
+\section{Figuren}
+\label{sec:Figuren}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.85\paperwidth, keepaspectratio]{img/Figure_1.png}
+  \caption{Fasering en tijdsplanning van het onderzoek}
+  \label{fig:gantt}
+\end{figure}
+
+\clearpage
