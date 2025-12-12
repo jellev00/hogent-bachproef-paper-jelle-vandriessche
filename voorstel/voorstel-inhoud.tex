@@ -12,7 +12,7 @@
 % uitgewerkt (met medesturent VOORNAAM NAAM als mede-auteur).
 % 
 
-\section{Inleiding}%
+\section{Inleiding}
 \label{sec:inleiding}
 
 \subsection{Probleemstelling}
@@ -26,11 +26,11 @@ Onderzoek toont aan dat veel softwareprojecten hun dependencies niet systematisc
 
 Wanneer het updateproces niet systematisch gebeurt, stapelen onderhoudstaken zich op, waardoor het steeds moeilijker en tijdrovender wordt om de software up-to-date te houden. Dit fenomeen staat bekend als \emph{technische schuld} (technical debt): de achterstand die ontstaat doordat noodzakelijke verbeteringen of updates te lang worden uitgesteld, wat leidt tot hogere onderhoudskosten en complexiteit op lange termijn \parencite{Behutiye2024,Ruiz2024}. Empirisch onderzoek bevestigt dat technische schuld binnen bedrijven reële negatieve gevolgen heeft voor productiviteit en softwarekwaliteit \parencite{Chalmers2020}.
 
-Veel organisaties gebruiken al geautomatiseerde dependencybots, zoals Dependabot of Renovate, die pull requests aanmaken zodra er nieuwe versies beschikbaar zijn \parencite{Erlenhov2022}. Deze oplossingen helpen om updates te detecteren, maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een pull request gemerged kan worden \parencite{Erlenhov2022}.
+Veel organisaties gebruiken al geautomatiseerde dependencybots, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het automatisch detecteren van kwetsbare of verouderde dependencies en het aanmaken van update-pull-requests.\autocite{GitHubDependabotDocs}} of Renovate\footnote{Renovate is een open-source dependencybot die geautomatiseerde update-pull-requests en uitgebreide configuratiemogelijkheden biedt voor diverse platformen en package managers.\autocite{RenovateDocs}}, die pull requests aanmaken zodra er nieuwe versies beschikbaar zijn \parencite{Erlenhov2022}. Deze oplossingen helpen om updates te detecteren, maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een pull request gemerged kan worden \parencite{Erlenhov2022}.
 
 Binnen het bedrijf waar deze bachelorproef wordt uitgevoerd, leiden deze manuele analyses tot extra werkdruk voor een specifiek ontwikkelteam, namelijk het kleine kernteam dat verantwoordelijk is voor platform- en dependencybeheer over meerdere projecten en repositories heen. Daardoor gaat er disproportioneel veel tijd naar het nakijken van dependency-updates, ten koste van andere ontwikkeltaken.
 
-Deze bachelorproef richt zich daarom op het ontwikkelen van een AI-gedreven systeem dat bovenop bestaande tooling zoals Dependabot draait. Het systeem leest automatisch de door Dependabot aangemaakte pull requests in, analyseert de bijhorende changelogs en release notes, vat de essentie in begrijpelijke taal samen en ondersteunt het nemen van een beslissing (bijvoorbeeld mergen, uitstellen of extra acties uitvoeren). De tool moet onder andere kunnen controleren welke dependency wordt bijgewerkt, welk type update het betreft (patch, minor, major), wat de belangrijkste wijzigingen zijn en moet, indien gewenst, automatisch een pull request goedkeuren of sluiten volgens vooraf gedefinieerde regels.
+Deze bachelorproef richt zich daarom op het ontwikkelen van een AI-gedreven systeem dat bovenop bestaande tooling zoals Dependabot\footnote{Zie \autocite{GitHubDependabotDocs} voor een overzicht van de functionaliteit, configuratieopties en best practices van Dependabot.} draait. Het systeem leest automatisch de door Dependabot aangemaakte pull requests in, analyseert de bijhorende changelogs en release notes, vat de essentie in begrijpelijke taal samen en ondersteunt het nemen van een beslissing (bijvoorbeeld mergen, uitstellen of extra acties uitvoeren). De tool moet onder andere kunnen controleren welke dependency wordt bijgewerkt, welk type update het betreft (patch, minor, major), wat de belangrijkste wijzigingen zijn en moet, indien gewenst, automatisch een pull request goedkeuren of sluiten volgens vooraf gedefinieerde regels.
 
 Op die manier kan het updateproces slimmer, sneller en inzichtelijker worden gemaakt voor een duidelijk afgebakende doelgroep: het kleine kernteam dat binnen het bedrijf verantwoordelijk is voor dependencybeheer en platformonderhoud, in plaats van alle ontwikkelteams in het algemeen.
 
@@ -46,7 +46,7 @@ Om het probleem van handmatig dependencybeheer en beperkte context bij updates o
 Hieruit vloeien de volgende deelvragen voort.
 
 \subsubsection{Deelvragen voor het beter begrijpen van het probleem}
-\label{sec:Deelvragen voor het beter begrijpen van het probleem}
+\label{sec:Deelvragen_voor_het_beter_begrijpen_van_het_probleem}
 
 \begin{enumerate}
   \item Wat zijn de belangrijkste uitdagingen en risico's bij het huidige, overwegend manuele dependency management voor het kernteam dat verantwoordelijk is voor platform- en dependencybeheer?
@@ -55,7 +55,7 @@ Hieruit vloeien de volgende deelvragen voort.
 \end{enumerate}
 
 \subsubsection{Deelvragen richting de oplossing}
-\label{sec:Deelvragen richting de oplossing}
+\label{sec:Deelvragen_richting_de_oplossing}
 
 \begin{enumerate}
   \setcounter{enumi}{3}
@@ -72,14 +72,14 @@ Het doel van dit onderzoek is om een proof-of-concept te ontwikkelen van een web
 Concreet zal de oplossing:
 \begin{itemize}
   \item per project de gebruikte dependencies bijhouden;
-  \item automatisch nagaan of er nieuwe versies beschikbaar zijn via publieke registries (zoals npm, Maven Central, NuGet en PyPI) of via bestaande tools zoals Dependabot;
+  \item automatisch nagaan of er nieuwe versies beschikbaar zijn via publieke registries (zoals npm\footnote{npm is het standaardpakketbeheerplatform voor het JavaScript-ecosysteem.\autocite{NpmHome}}, Maven Central\footnote{Maven Central is de centrale repository voor Java-artifacts in het Maven-ecosysteem.\autocite{MavenCentral}}, NuGet\footnote{NuGet is de officiële package manager en online galerij voor .NET-bibliotheken.\autocite{NuGetGallery}} en PyPI\footnote{PyPI is de officiële Python Package Index voor het publiceren en distribueren van Python-pakketten.\autocite{PyPI}}) of via bestaande tools zoals Dependabot\footnote{Zie opnieuw \autocite{GitHubDependabotDocs} voor de integratie van Dependabot met verschillende ecosystemen.};
   \item changelogs, release notes en dependency-pull-requests analyseren met behulp van een AI-agent;
   \item het verantwoordelijke kernteam informeren over de aard en impact van de updates, inclusief een korte, begrijpelijke samenvatting en een indicatie of de update veilig lijkt om door te voeren;
   \item regels implementeren om, waar mogelijk, automatisch een pull request goed te keuren of te sluiten, zodat het kernteam minder manuele beslissingen hoeft te nemen;
   \item geselecteerde platformen beoordelen op geschiktheid op basis van gebruiksgemak, integratiemogelijkheden, onderhoudbaarheid, performantie en mate waarin zij voldoen aan de gedefinieerde vereisten.
 \end{itemize}
 
-De tool zal opgebouwd worden met \texttt{Next.js} als frontend, een C\# (.NET) of Java (Spring Boot) backend, en een database (PostgreSQL, MongoDB of Supabase) voor gebruikers- en projectbeheer. Het onderzoek resulteert in:
+De tool zal opgebouwd worden met \texttt{Next.js}\footnote{Next.js is een React-gebaseerd webframework voor het bouwen van full-stack webapplicaties met server-side rendering en API-routes.\autocite{NextJS}} als frontend, een C\#\footnote{C\# is een moderne, objectgeori\"enteerde programmeertaal op het .NET-platform.\autocite{CSharpDotnet}} (.NET) of Java (Spring Boot\footnote{Spring Boot is een Java-framework dat het bouwen en configureren van productieklare microservices vereenvoudigt.\autocite{SpringBoot}}) backend, en een database (PostgreSQL\footnote{PostgreSQL is een open-source relationeel databasemanagementsysteem dat sterk inzet op betrouwbaarheid en uitbreidbaarheid.\autocite{PostgreSQL}}, MongoDB\footnote{MongoDB is een documentgeori\"enteerde NoSQL-database gericht op flexibiliteit en schaalbaarheid.\autocite{MongoDB}} of Supabase\footnote{Supabase is een ontwikkelplatform bovenop PostgreSQL dat out-of-the-box API's, authenticatie en opslag aanbiedt.\autocite{Supabase}}) voor gebruikers- en projectbeheer. Het onderzoek resulteert in:
 \begin{itemize}
   \item een prototype (demo) dat de werking van het systeem aantoont binnen een of enkele projecten van het bedrijf;
   \item een evaluatie van de toegevoegde waarde van AI bij dependency management voor het specifieke kernteam;
@@ -87,7 +87,7 @@ De tool zal opgebouwd worden met \texttt{Next.js} als frontend, een C\# (.NET) o
 \end{itemize}
 
 \subsection{Opzet van deze bachelorproef}
-\label{sec:Opzet van deze bachelorproef}
+\label{sec:Opzet_van_deze_bachelorproef}
 
 De bachelorproef volgt een klassieke onderzoeksstructuur en is als volgt opgebouwd:
 
@@ -105,35 +105,52 @@ De bachelorproef volgt een klassieke onderzoeksstructuur en is als volgt opgebou
         In dit hoofdstuk worden de verwachte resultaten van de implementatie en experimenten gepresenteerd.
 
   \item \textbf{Hoofdstuk 5 -- Verwachte conclusie:}
-        Dit hoofdstuk formuleert de verwachte belangrijkste bevindingen op basis van de onderzoeksvragen
+        Dit hoofdstuk formuleert de verwachte belangrijkste bevindingen op basis van de onderzoeksvragen.
 \end{itemize}
+
 
 %---------- Stand van zaken ---------------------------------------------------
 
-\section{Literatuurstudie}%
+\section{Literatuurstudie}
 \label{sec:literatuurstudie}
 
-Hier beschrijf je de \emph{state-of-the-art} rondom je gekozen onderzoeksdomein, d.w.z.\ een inleidende, doorlopende tekst over het onderzoeksdomein van je bachelorproef. Je steunt daarbij heel sterk op de professionele \emph{vakliteratuur}, en niet zozeer op populariserende teksten voor een breed publiek. Wat is de huidige stand van zaken in dit domein, en wat zijn nog eventuele open vragen (die misschien de aanleiding waren tot je onderzoeksvraag!)?
+\subsection{Dependency management en kwetsbare dependencies}
 
-Je mag de titel van deze sectie ook aanpassen (literatuurstudie, stand van zaken, enz.). Zijn er al gelijkaardige onderzoeken gevoerd? Wat concluderen ze? Wat is het verschil met jouw onderzoek?
+Moderne softwareprojecten steunen sterk op open-source dependencies, waardoor kwetsbaarheden in externe bibliotheken rechtstreeks een impact kunnen hebben op de veiligheid en betrouwbaarheid van toepassingen.\autocite{Pashchenko2018} Pashchenko et al.\ tonen aan dat een groot deel van de aangetroffen kwetsbare dependencies in de praktijk relatief eenvoudig verholpen kan worden door te upgraden naar een veiligere versie, maar dat ontwikkelteams deze updates vaak niet consequent doorvoeren.\autocite{Pashchenko2018}
 
-Verwijs bij elke introductie van een term of bewering over het domein naar de vakliteratuur, bijvoorbeeld~\autocite{Hykes2013}! Denk zeker goed na welke werken je refereert en waarom.
+In hun proefondervindelijk onderzoek onderscheiden Pashchenko et al.\ tussen daadwerkelijk gedeployde kwetsbare dependencies en libraries die enkel tijdens ontwikkeling of testing gebruikt worden, en stellen zij vast dat het merendeel van de reëel kwetsbare dependencies door de eigen ontwikkelaars of directe onderhouders kan worden opgelost.\autocite{Pashchenko2018} Dit onderstreept het belang van systematisch dependencybeheer en duidelijke inzichten in welke dependencies effectief risico vormen in productie omgevingen.\autocite{Pashchenko2018}
 
-Draag zorg voor correcte literatuurverwijzingen! Een bronvermelding hoort thuis \emph{binnen} de zin waar je je op die bron baseert, dus niet er buiten! Maak meteen een verwijzing als je gebruik maakt van een bron. Doe dit dus \emph{niet} aan het einde van een lange paragraaf. Baseer nooit teveel aansluitende tekst op eenzelfde bron.
+\subsection{Technische schuld en onderhoudslast}
 
-Als je informatie over bronnen verzamelt in JabRef, zorg er dan voor dat alle nodige info aanwezig is om de bron terug te vinden (zoals uitvoerig besproken in de lessen Research Methods).
+Het uitstellen van dependency-updates draagt bij aan de opbouw van technische schuld, waardoor onderhoud en toekomstige wijzigingen steeds meer inspanning vereisen.\autocite{Behutiye2024,Ruiz2024} Behutiye et al.\ analyseren de rol van technische schuld in agile omgevingen en beschrijven hoe keuzes die op korte termijn tijdswinst opleveren, op langere termijn leiden tot hogere kosten en complexere wijzigingen.\autocite{Behutiye2024}
 
-% Voor literatuurverwijzingen zijn er twee belangrijke commando's:
-% \autocite{KEY} => (Auteur, jaartal) Gebruik dit als de naam van de auteur
-%   geen onderdeel is van de zin.
-% \textcite{KEY} => Auteur (jaartal)  Gebruik dit als de auteursnaam wel een
-%   functie heeft in de zin (bv. ``Uit onderzoek door Doll & Hill (1954) bleek
-%   ...'')
+Ruiz et al.\ bespreken in hun tertiaire studie dat technische-schuldmanagement de voorbije jaren een groeiend onderzoeksdomein is geworden, waarbij organisaties worstelen met het in kaart brengen, prioriteren en terugdringen van opgebouwde schuld.\autocite{Ruiz2024} Empirisch werk van Chalmers University of Technology bevestigt dat technische schuld niet louter een theoretisch concept is, maar in industriële context concreet voelbaar is in de vorm van verminderde productiviteit, hogere foutkans en vertragingen in softwarelevering.\autocite{Chalmers2020}
 
-Je mag deze sectie nog verder onderverdelen in subsecties als dit de structuur van de tekst kan verduidelijken.
+\subsection{Dependencybots en hun beperkingen}
+
+Om de handmatige last rond dependencybeheer te verlagen, zetten veel projecten dependency management bots in, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het monitoren van kwetsbaarheden en het automatisch aanmaken van update-pull-requests voor ondersteunde ecosystemen.\autocite{GitHubDependabotDocs}} en Renovate\footnote{Renovate is een open-source dependencybot die automatisch pull requests genereert voor versie- en beveiligingsupdates, met uitgebreide configuratiemogelijkheden en ondersteuning voor meerdere platformen.\autocite{RenovateDocs}}.\autocite{Erlenhov2022} Erlenhov et al.\ voeren een kwantitatieve en kwalitatieve studie uit naar dependencybots in open-source systemen en stellen vast dat slechts een beperkt aantal van de geanalyseerde geautomatiseerde tools voldoet aan de criteria van volwaardige ``Devbots'', die autonoom bijdragen aan de codebasis.\autocite{Erlenhov2022}
+
+Hun resultaten tonen dat projecten vaak experimenteren met meerdere bots en regelmatig wisselen, onder meer door problemen met ruis (te veel pull requests), beperkte configureerbaarheid en moeilijkheden om de impact van voorgestelde updates goed te begrijpen.\autocite{Erlenhov2022} Hoewel dependencybots het detecteren en aanmaken van update-pull-requests automatiseren, blijft de inhoudelijke beoordeling van changelogs, compatibiliteit en risico's grotendeels bij ontwikkelaars liggen, wat aansluit bij de probleemstelling van deze bachelorproef.\autocite{Erlenhov2022,Pashchenko2018}
+
+\subsection{AI, agents en workflow-automatisering}
+
+Recente literatuur verkent hoe AI-agents en multi-agentframeworks kunnen worden ingezet om complexe taken in softwareontwikkeling en data-intensieve workflows te coördineren.\autocite{Joshi2025,Kim2024,Zhu2025} Joshi biedt een overzicht van autonome systemen en collaboratieve AI-agentframeworks en benadrukt dat zulke agents vooral nuttig zijn in scenario's met veel herhalende beslissingen op basis van tekstuele en gestructureerde input, zoals logs, notificaties en rapporten.\autocite{Joshi2025}
+
+Kim et al.\ introduceren met Bel Esprit een multi-agentframework voor het opbouwen van AI-model-pijplijnen, waarbij verschillende gespecialiseerde agents samenwerken om complexere taken modulair af te handelen.\autocite{Kim2024} Zhu et al.\ bestuderen in OAgents empirisch welke ontwerpkeuzes leiden tot effectieve agents, en bespreken onder meer het belang van duidelijke taakafbakening, robuuste toolintegratie en feedbackloops voor betrouwbare beslissingsondersteuning.\autocite{Zhu2025} Deze inzichten zijn relevant voor het ontwerp van een AI-agent die dependency-updates interpreteert, samenvat en beslissingsvoorstellen formuleert voor een onderhoudsteam.
+
+Naast generieke agentframeworks beschrijft Wali et al.\ hoe workflow-automatisering met n8n\footnote{n8n is een open-source, low-code workflow-automatiseringstool waarmee integraties tussen API's, databronnen en notificatiesystemen visueel gemodelleerd en uitgevoerd kunnen worden.\autocite{Wali2025}} operationele efficiëntie kan verhogen door repetitieve, gegevensgedreven processen te coördineren over verschillende systemen heen.\autocite{Wali2025} Hoewel hun casus zich richt op een financiële context, illustreert de studie dat low-code workflowtools geschikt zijn om integraties met externe APIs, databronnen en notificatiekanalen te realiseren, wat ook essentieel is voor een geautomatiseerde dependency-updatepipeline.\autocite{Wali2025}
+
+\subsection{Onderzoeksniche: AI-ondersteund dependencybeheer}
+
+Samengenomen schetst de literatuur een duidelijk beeld: kwetsbare of verouderde dependencies vormen een reëel risico, maar kunnen vaak verholpen worden door updates die vandaag onvoldoende systematisch worden uitgevoerd.\autocite{Pashchenko2018,Behutiye2024} Tegelijk tonen studies naar technische schuld dat het structureel uitstellen van onderhoud, waaronder dependency updates, leidt tot een groeiende onderhoudslast en achterstand.\autocite{Behutiye2024,Ruiz2024,Chalmers2020}
+
+Onderzoek naar dependencybots maakt duidelijk dat huidige oplossingen weliswaar updates detecteren en pull requests genereren, maar ontwikkelaars nog steeds belasten met het interpreteren van changelogs en het beoordelen van risico's en prioriteiten.\autocite{Erlenhov2022} De recente vooruitgang in AI-agents en workflow-automatisering suggereert dat een volgende stap mogelijk is: een systeem waarin een AI-agent niet alleen updates signaleert, maar ook de inhoud van release notes en changelogs analyseert, samenvat en contextafhankelijk advies geeft aan een klein kernteam dat verantwoordelijk is voor dependencybeheer.\autocite{Joshi2025,Kim2024,Zhu2025,Wali2025}
+
+Deze bachelorproef positioneert zich precies in deze niche door een AI-gestuurde laag bovenop bestaande dependencybots te onderzoeken en te prototypen, met de expliciete focus op het verlagen van de manuele beoordelingslast en het beheersbaar houden van technische schuld rond dependencies in een bedrijfscontext.
+
 
 %---------- Methodologie ------------------------------------------------------
-\section{Methodologie}%
+\section{Methodologie}
 \label{sec:methodologie}
 
 Hier beschrijf je hoe je van plan bent het onderzoek te voeren. Welke onderzoekstechniek ga je toepassen om elk van je onderzoeksvragen te beantwoorden? Gebruik je hiervoor literatuurstudie, interviews met belanghebbenden (bv.~voor requirements-analyse), experimenten, simulaties, vergelijkende studie, risico-analyse, PoC, \ldots?
@@ -149,12 +166,11 @@ Je beschrijft ook al welke tools (hardware, software, diensten, \ldots) je denkt
 Probeer ook een tijdschatting te maken. Hoe lang zal je met elke fase van je onderzoek bezig zijn en wat zijn de concrete \emph{deliverables} in elke fase?
 
 %---------- Verwachte resultaten ----------------------------------------------
-\section{Verwacht resultaat, conclusie}%
+\section{Verwacht resultaat}
 \label{sec:verwachte_resultaten}
 
-Hier beschrijf je welke resultaten je verwacht. Als je metingen en simulaties uitvoert, kan je hier al mock-ups maken van de grafieken samen met de verwachte conclusies. Benoem zeker al je assen en de onderdelen van de grafiek die je gaat gebruiken. Dit zorgt ervoor dat je concreet weet welk soort data je moet verzamelen en hoe je die moet meten.
 
-Wat heeft de doelgroep van je onderzoek aan het resultaat? Op welke manier zorgt jouw bachelorproef voor een meerwaarde?
 
-Hier beschrijf je wat je verwacht uit je onderzoek, met de motivatie waarom. Het is \textbf{niet} erg indien uit je onderzoek andere resultaten en conclusies vloeien dan dat je hier beschrijft: het is dan juist interessant om te onderzoeken waarom jouw hypothesen niet overeenkomen met de resultaten.
-
+%---------- Verwachte conclusies ----------------------------------------------
+\section{Verwacht conclusie}
+\label{sec:verwachte_conclusies}
