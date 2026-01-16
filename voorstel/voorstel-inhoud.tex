@@ -15,24 +15,16 @@
 \section{Inleiding}
 \label{sec:inleiding}
 
+Softwareprojecten binnen bedrijven en organisaties maken gebruik van talrijke externe bibliotheken, frameworks en tools, de zogenaamde \emph{dependencies}. Deze dependencies worden voortdurend bijgewerkt om nieuwe functionaliteiten, verbeterde prestaties en vooral beveiligingspatches aan te bieden.\parencite{Pashchenko2018} In de praktijk blijkt het voor ontwikkelteams echter moeilijk om alle updates systematisch op te volgen en grondig te evalueren, zeker wanneer een bedrijf meerdere projecten en repositories beheert.
+
 \subsection{Probleemstelling}
 \label{sec:Probleemstelling}
 
-Softwareprojecten binnen bedrijven en organisaties maken gebruik van talrijke externe bibliotheken, frameworks en tools, de zogenaamde \emph{dependencies}. Deze dependencies worden voortdurend bijgewerkt om nieuwe functionaliteiten, verbeterde prestaties en vooral beveiligingspatches aan te bieden \parencite{Pashchenko2018}.
-
-Het manueel opvolgen van deze updates vormt echter een groot probleem in softwareontwikkeling. Ontwikkelaars moeten regelmatig changelogs doorzoeken, compatibiliteit controleren en inschatten welke updates veilig kunnen worden doorgevoerd, wat in de praktijk veel tijd vraagt en vaak wordt uitgesteld \parencite{Pashchenko2018,Behutiye2024}.
-
-Onderzoek toont aan dat veel softwareprojecten hun dependencies niet systematisch bijhouden, waardoor een aanzienlijk deel verouderd raakt. Pashchenko et al.\ \parencite{Pashchenko2018} stellen bijvoorbeeld dat een belangrijk percentage kwetsbare dependencies relatief eenvoudig opgelost kan worden door een update, maar dat dit in de praktijk niet gebeurt wegens tijdsdruk en gebrek aan overzicht.
-
-Wanneer het updateproces niet systematisch gebeurt, stapelen onderhoudstaken zich op, waardoor het steeds moeilijker en tijdrovender wordt om de software up-to-date te houden. Dit fenomeen staat bekend als \emph{technische schuld} (technical debt): de achterstand die ontstaat doordat noodzakelijke verbeteringen of updates te lang worden uitgesteld, wat leidt tot hogere onderhoudskosten en complexiteit op lange termijn \parencite{Behutiye2024,Ruiz2024}. Empirisch onderzoek bevestigt dat technische schuld binnen bedrijven reële negatieve gevolgen heeft voor productiviteit en softwarekwaliteit \parencite{Chalmers2020}.
-
-Veel organisaties gebruiken al geautomatiseerde dependencybots, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het automatisch detecteren van kwetsbare of verouderde dependencies en het aanmaken van update-pull-requests.\autocite{GitHubDependabotDocs}} of Renovate\footnote{Renovate is een open-source dependencybot die geautomatiseerde update-pull-requests en uitgebreide configuratiemogelijkheden biedt voor diverse platformen en package managers.\autocite{RenovateDocs}}, die pull requests aanmaken zodra er nieuwe versies beschikbaar zijn \parencite{Erlenhov2022}. Deze oplossingen helpen om updates te detecteren, maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een pull request gemerged kan worden \parencite{Erlenhov2022}.
-
-Binnen het bedrijf waar deze bachelorproef wordt uitgevoerd, leiden deze manuele analyses tot extra werkdruk voor een specifiek ontwikkelteam, namelijk het kleine kernteam dat verantwoordelijk is voor platform- en dependencybeheer over meerdere projecten en repositories heen. Daardoor gaat er disproportioneel veel tijd naar het nakijken van dependency-updates, ten koste van andere ontwikkeltaken.
-
-Deze bachelorproef richt zich daarom op het ontwikkelen van een AI-gedreven systeem dat bovenop bestaande tooling zoals Dependabot\footnote{Zie \autocite{GitHubDependabotDocs} voor een overzicht van de functionaliteit, configuratieopties en best practices van Dependabot.} draait. Het systeem leest automatisch de door Dependabot aangemaakte pull requests in, analyseert de bijhorende changelogs en release notes, vat de essentie in begrijpelijke taal samen en ondersteunt het nemen van een beslissing (bijvoorbeeld mergen, uitstellen of extra acties uitvoeren). De tool moet onder andere kunnen controleren welke dependency wordt bijgewerkt, welk type update het betreft (patch, minor, major), wat de belangrijkste wijzigingen zijn en moet, indien gewenst, automatisch een pull request goedkeuren of sluiten volgens vooraf gedefinieerde regels.
-
-Op die manier kan het updateproces slimmer, sneller en inzichtelijker worden gemaakt voor een duidelijk afgebakende doelgroep: het kleine kernteam dat binnen het bedrijf verantwoordelijk is voor dependencybeheer en platformonderhoud, in plaats van alle ontwikkelteams in het algemeen.
+Het manueel opvolgen van dependency-updates vormt een groot probleem in softwareontwikkeling. Ontwikkelaars moeten regelmatig changelogs doorzoeken, compatibiliteit controleren en inschatten welke updates veilig kunnen worden doorgevoerd, wat in de praktijk veel tijd vraagt en vaak wordt uitgesteld.\parencite{Pashchenko2018,Behutiye2024} Onderzoek toont aan dat veel softwareprojecten hun dependencies niet systematisch bijhouden, waardoor een aanzienlijk deel verouderd raakt. Pashchenko et al.\ \parencite{Pashchenko2018} stellen bijvoorbeeld dat een belangrijk percentage kwetsbare dependencies relatief eenvoudig opgelost kan worden door een update, maar dat dit in de praktijk niet gebeurt wegens tijdsdruk en gebrek aan overzicht.
+Wanneer het updateproces niet systematisch gebeurt, stapelen onderhoudstaken zich op, waardoor het steeds moeilijker en tijdrovender wordt om de software up-to-date te houden. Dit fenomeen staat bekend als \emph{technische schuld} (technical debt): de achterstand die ontstaat doordat noodzakelijke verbeteringen of updates te lang worden uitgesteld, wat leidt tot hogere onderhoudskosten en complexiteit op lange termijn.\parencite{Behutiye2024,Ruiz2024} Empirisch onderzoek bevestigt dat technische schuld binnen bedrijven reële negatieve gevolgen heeft voor productiviteit en softwarekwaliteit.\parencite{Chalmers2020}
+Om deze last te verlichten, zetten veel organisaties al geautomatiseerde dependencybots in, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het automatisch detecteren van kwetsbare of verouderde dependencies en het aanmaken van update-pull-requests.\textcite{GitHubDependabotDocs}} of Renovate.\footnote{Renovate is een open-source dependencybot die geautomatiseerde update-pull-requests en uitgebreide configuratiemogelijkheden biedt voor diverse platformen en package managers.\textcite{RenovateDocs}} Deze tools maken wel automatisch pull requests aan zodra er nieuwe versies beschikbaar zijn,\parencite{Erlenhov2022} maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een update al dan niet moet worden doorgevoerd.\parencite{Erlenhov2022}
+Deze bachelorproef richt zich daarom op het ontwikkelen van een \emph{aparte webapplicatie} (een dashboard) die integreert met GitHub-repositories van het bedrijf. Per project houdt deze applicatie de gebruikte dependencies bij, controleert via publieke registries (zoals npm,\footnote{npm is het standaardpakketbeheerplatform voor het JavaScript-ecosysteem.\autocite{NpmHome}}) of er nieuwe versies beschikbaar zijn en verzamelt de relevante changelogs en release notes. Een AI-agent, die in dit onderzoek \emph{from scratch} wordt ontworpen op basis van bestaande AI-modellen maar zonder voorafgebouwd agentframework, analyseert deze informatie, genereert begrijpelijke samenvattingen en beoordeelt in welke mate een update cruciaal is (bijvoorbeeld om veiligheidsredenen) of eerder optioneel.
+De AI-agent geeft het kernteam via het dashboard inzicht in vragen zoals: welke dependencies zijn verouderd, wat is er precies veranderd in de nieuwe versie, zijn er bekende beveiligingsrisico's als niet wordt geüpdatet, en lijkt de update technisch laag- of hoogrisicovol. De webapplicatie leeft dus als een losstaand platform naast GitHub, maar gebruikt GitHub uitsluitend als bron voor project- en dependency-informatie en, eventueel, als kanaal om later pull requests of issues te creëren. Op die manier kan het updateproces slimmer, sneller en inzichtelijker worden gemaakt.
 
 \subsection{Onderzoeksvraag}
 \label{sec:Onderzoeksvraag}
@@ -67,47 +59,25 @@ Hieruit vloeien de volgende deelvragen voort.
 \subsection{Onderzoeksdoelstelling}
 \label{sec:Onderzoeksdoelstelling}
 
-Het doel van dit onderzoek is om een proof-of-concept te ontwikkelen van een webapplicatie die automatisch dependency-updates detecteert, analyseert en communiceert via een geïntegreerde AI-agent, en om na te gaan in welke mate geselecteerde AI-agent- of workflowplatformen voldoen aan de vereisten van het bedrijf voor geautomatiseerd dependencybeheer. Eerder onderzoek toont aan dat AI-technieken succesvol kunnen worden ingezet binnen onderhoudstaken zoals changelog-analyse en code review, wat aantoont dat deze toepassing haalbaar en relevant is \parencite{Behutiye2024,Joshi2025,Kim2024,Zhu2025}.
+Het doel van dit onderzoek is om een proof-of-concept te ontwikkelen van een \emph{aparte webapplicatie} (dashboard) die automatisch dependency-updates detecteert, analyseert en communiceert via een geïntegreerde, from-scratch ontworpen AI-agent, en om na te gaan in welke mate geselecteerde AI-agent- of workflowplatformen deze oplossing kunnen ondersteunen en voldoen aan de vereisten van het bedrijf voor geautomatiseerd dependencybeheer. Eerder onderzoek toont aan dat AI-technieken succesvol kunnen worden ingezet binnen onderhoudstaken zoals changelog-analyse en code review, wat aantoont dat deze toepassing haalbaar en relevant is.\parencite{Behutiye2024,Joshi2025,Kim2024,Zhu2025}
 
 Concreet zal de oplossing:
+
 \begin{itemize}
   \item per project de gebruikte dependencies bijhouden;
-  \item automatisch nagaan of er nieuwe versies beschikbaar zijn via publieke registries (zoals npm\footnote{npm is het standaardpakketbeheerplatform voor het JavaScript-ecosysteem.\autocite{NpmHome}}, Maven Central\footnote{Maven Central is de centrale repository voor Java-artifacts in het Maven-ecosysteem.\autocite{MavenCentral}}, NuGet\footnote{NuGet is de officiële package manager en online galerij voor .NET-bibliotheken.\autocite{NuGetGallery}} en PyPI\footnote{PyPI is de officiële Python Package Index voor het publiceren en distribueren van Python-pakketten.\autocite{PyPI}}) of via bestaande tools zoals Dependabot\footnote{Zie opnieuw \autocite{GitHubDependabotDocs} voor de integratie van Dependabot met verschillende ecosystemen.};
-  \item changelogs, release notes en dependency-pull-requests analyseren met behulp van een AI-agent;
-  \item het verantwoordelijke kernteam informeren over de aard en impact van de updates, inclusief een korte, begrijpelijke samenvatting en een indicatie of de update veilig lijkt om door te voeren;
-  \item regels implementeren om, waar mogelijk, automatisch een pull request goed te keuren of te sluiten, zodat het kernteam minder manuele beslissingen hoeft te nemen;
-  \item geselecteerde platformen beoordelen op geschiktheid op basis van gebruiksgemak, integratiemogelijkheden, onderhoudbaarheid, performantie en mate waarin zij voldoen aan de gedefinieerde vereisten.
+  \item automatisch nagaan of er nieuwe versies beschikbaar zijn via publieke registries (zoals npm);
+  \item changelogs en release notes analyseren met behulp van een AI-agent die samenvat wat er gewijzigd is en welke risico's of voordelen een update inhoudt;
+  \item de verantwoordelijke developers via een dashboard informeren over de aard en impact van de updates, inclusief een korte, begrijpelijke samenvatting en een indicatie of de update cruciaal, risicovol of veilig lijkt;
+  \item regels ondersteunen waardoor de developers gemakkelijker kan beslissen of en wanneer een dependency geüpdatet wordt, zonder dat deze beslissingen automatisch in GitHub worden afgedwongen.
 \end{itemize}
 
-De tool zal opgebouwd worden met \texttt{Next.js}\footnote{Next.js is een React-gebaseerd webframework voor het bouwen van full-stack webapplicaties met server-side rendering en API-routes.\autocite{NextJS}} als frontend, een C\#\footnote{C\# is een moderne, objectgeori\"enteerde programmeertaal op het .NET-platform.\autocite{CSharpDotnet}} (.NET) of Java (Spring Boot\footnote{Spring Boot is een Java-framework dat het bouwen en configureren van productieklare microservices vereenvoudigt.\autocite{SpringBoot}}) backend, en een database (PostgreSQL\footnote{PostgreSQL is een open-source relationeel databasemanagementsysteem dat sterk inzet op betrouwbaarheid en uitbreidbaarheid.\autocite{PostgreSQL}}, MongoDB\footnote{MongoDB is een documentgeori\"enteerde NoSQL-database gericht op flexibiliteit en schaalbaarheid.\autocite{MongoDB}} of Supabase\footnote{Supabase is een ontwikkelplatform bovenop PostgreSQL dat out-of-the-box API's, authenticatie en opslag aanbiedt.\autocite{Supabase}}) voor gebruikers- en projectbeheer. Het onderzoek resulteert in:
+De concrete technologiekeuzes worden in de verdere uitwerking van de bachelorproef gemotiveerd op basis van de requirements en de context van het bedrijf. Het onderzoek resulteert in:
+
 \begin{itemize}
   \item een prototype (demo) dat de werking van het systeem aantoont binnen een of enkele projecten van het bedrijf;
-  \item een evaluatie van de toegevoegde waarde van AI bij dependency management voor het specifieke kernteam;
+  \item een evaluatie van de toegevoegde waarde van AI bij dependency management voor de specifieke developer;
   \item een aanbeveling welk type platform, en eventueel welke concrete technologie, het meest geschikt is voor verdere toepassing binnen het bedrijf.
 \end{itemize}
-
-\subsection{Opzet van deze bachelorproef}
-\label{sec:Opzet_van_deze_bachelorproef}
-
-De bachelorproef volgt een klassieke onderzoeksstructuur en is als volgt opgebouwd:
-
-\begin{itemize}
-  \item \textbf{Hoofdstuk 1 -- Inleiding en probleemstelling:}
-        Dit hoofdstuk beschrijft de context, de probleemstelling, de onderzoeksvragen en de doelstellingen van de bachelorproef.
-
-  \item \textbf{Hoofdstuk 2 -- Literatuurstudie:}
-        In dit hoofdstuk wordt de relevante literatuur rond dependency management, bestaande tools en oplossingen, technische schuld en AI-agent-frameworks en workflow-automatisering geanalyseerd.
-
-  \item \textbf{Hoofdstuk 3 -- Methodologie en implementatie:}
-        Dit hoofdstuk bespreekt de onderzoeksaanpak, het ontwerp van de systeemarchitectuur, de selectie van platformen en de implementatie van de proof-of-concept.
-
-  \item \textbf{Hoofdstuk 4 -- Verwachte resultaten:}
-        In dit hoofdstuk worden de verwachte resultaten van de implementatie en experimenten gepresenteerd.
-
-  \item \textbf{Hoofdstuk 5 -- Verwachte conclusie:}
-        Dit hoofdstuk formuleert de verwachte belangrijkste bevindingen op basis van de onderzoeksvragen.
-\end{itemize}
-
 
 %---------- Stand van zaken ---------------------------------------------------
 
@@ -128,7 +98,7 @@ Ruiz et al.\ bespreken in hun tertiaire studie dat technische-schuldmanagement d
 
 \subsection{Dependencybots en hun beperkingen}
 
-Om de handmatige last rond dependencybeheer te verlagen, zetten veel projecten dependency management bots in, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het monitoren van kwetsbaarheden en het automatisch aanmaken van update-pull-requests voor ondersteunde ecosystemen.\autocite{GitHubDependabotDocs}} en Renovate\footnote{Renovate is een open-source dependencybot die automatisch pull requests genereert voor versie- en beveiligingsupdates, met uitgebreide configuratiemogelijkheden en ondersteuning voor meerdere platformen.\autocite{RenovateDocs}}.\autocite{Erlenhov2022} Erlenhov et al.\ voeren een kwantitatieve en kwalitatieve studie uit naar dependencybots in open-source systemen en stellen vast dat slechts een beperkt aantal van de geanalyseerde geautomatiseerde tools voldoet aan de criteria van volwaardige ``Devbots'', die autonoom bijdragen aan de codebasis.\autocite{Erlenhov2022}
+Om de handmatige last rond dependencybeheer te verlagen, zetten veel projecten dependency management bots in, zoals Dependabot en Renovate.\autocite{Erlenhov2022} Erlenhov et al.\ voeren een kwantitatieve en kwalitatieve studie uit naar dependencybots in open-source systemen en stellen vast dat slechts een beperkt aantal van de geanalyseerde geautomatiseerde tools voldoet aan de criteria van volwaardige ``Devbots'', die autonoom bijdragen aan de codebasis.\autocite{Erlenhov2022}
 
 Hun resultaten tonen dat projecten vaak experimenteren met meerdere bots en regelmatig wisselen, onder meer door problemen met ruis (te veel pull requests), beperkte configureerbaarheid en moeilijkheden om de impact van voorgestelde updates goed te begrijpen.\autocite{Erlenhov2022} Hoewel dependencybots het detecteren en aanmaken van update-pull-requests automatiseren, blijft de inhoudelijke beoordeling van changelogs, compatibiliteit en risico's grotendeels bij ontwikkelaars liggen, wat aansluit bij de probleemstelling van deze bachelorproef.\autocite{Erlenhov2022,Pashchenko2018}
 
@@ -138,7 +108,7 @@ Recente literatuur verkent hoe AI-agents en multi-agentframeworks kunnen worden 
 
 Kim et al.\ introduceren met Bel Esprit een multi-agentframework voor het opbouwen van AI-model-pijplijnen, waarbij verschillende gespecialiseerde agents samenwerken om complexere taken modulair af te handelen.\autocite{Kim2024} Zhu et al.\ bestuderen in OAgents empirisch welke ontwerpkeuzes leiden tot effectieve agents, en bespreken onder meer het belang van duidelijke taakafbakening, robuuste toolintegratie en feedbackloops voor betrouwbare beslissingsondersteuning.\autocite{Zhu2025} Deze inzichten zijn relevant voor het ontwerp van een AI-agent die dependency-updates interpreteert, samenvat en beslissingsvoorstellen formuleert voor een onderhoudsteam.
 
-Naast generieke agentframeworks beschrijft Wali et al.\ hoe workflow-automatisering met n8n\footnote{n8n is een open-source, low-code workflow-automatiseringstool waarmee integraties tussen API's, databronnen en notificatiesystemen visueel gemodelleerd en uitgevoerd kunnen worden.\autocite{Wali2025}} operationele efficiëntie kan verhogen door repetitieve, gegevensgedreven processen te coördineren over verschillende systemen heen.\autocite{Wali2025} Hoewel hun casus zich richt op een financiële context, illustreert de studie dat low-code workflowtools geschikt zijn om integraties met externe APIs, databronnen en notificatiekanalen te realiseren, wat ook essentieel is voor een geautomatiseerde dependency-updatepipeline.\autocite{Wali2025}
+Naast generieke agentframeworks beschrijft Wali et al.\ hoe workflow-automatisering met n8n\footnote{n8n is een open-source low-code tool om workflows te automatiseren en API’s en systemen visueel te koppelen..\autocite{Wali2025}} operationele efficiëntie kan verhogen door repetitieve, gegevensgedreven processen te coördineren over verschillende systemen heen.\autocite{Wali2025} Hoewel hun casus zich richt op een financiële context, illustreert de studie dat low-code workflowtools geschikt zijn om integraties met externe APIs, databronnen en notificatiekanalen te realiseren, wat ook essentieel is voor een geautomatiseerde dependency-updatepipeline.\autocite{Wali2025}
 
 \subsection{Onderzoeksniche: AI-ondersteund dependencybeheer}
 
@@ -199,19 +169,6 @@ Om de onderzoeksvraag rond de geschiktheid van verschillende AI-agent- en workfl
 \end{itemize}
 
 Er wordt een reeks gestandaardiseerde scenario's gedefinieerd (bijvoorbeeld een set representatieve dependency-updates met verschillende types wijzigingen en risico's). Voor elk geselecteerd platform wordt dezelfde set scenario's geïmplementeerd en uitgevoerd, zodat de resultaten langs de gedefinieerde criteria objectief kunnen worden vergeleken. De uitkomsten van deze experimenten worden gebruikt om de sterktes en zwaktes van elk platform in de context van dit specifieke probleemdomein te identificeren.
-
-
-\subsection{Tools en middelen}
-\label{sec:tools-middelen}
-
-Voor de praktische uitvoering van het onderzoek wordt gebruikgemaakt van:
-\begin{itemize}
-  \item versiebeheer (bijvoorbeeld GitHub) voor de codebasis en configuratiebestanden;
-  \item een zelf gemaakte dependencybot als bron van automatische updates;
-  \item publieke registries (npm, Maven Central, NuGet, PyPI) voor versie-informatie en metadata over dependencies;
-  \item gekozen AI-agent- of workflowplatformen voor de implementatie van de AI-gedreven analysetaken;
-  \item standaardontwikkeltools (IDE, containerisatie, CI/CD) voor het bouwen, testen en uitrollen van de proof-of-concept.
-\end{itemize}
 
 \subsection{Fasering en tijdsplanning}
 \label{sec:fasering-tijdsplanning}
