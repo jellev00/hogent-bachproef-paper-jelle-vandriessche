@@ -27,7 +27,7 @@
 \academicyear{2025-2026} % TODO: pas het academiejaar aan
 
 % TODO: Werktitel
-\title{Artificial Intelligence Dependency Checker}
+\title{AI-gestuurd Dependency Dashboard voor Automatische Analyse en Prioritering van Software-updates}
 
 % TODO: Studentnaam en emailadres invullen
 \author{Jelle Vandriessche}
@@ -61,9 +61,9 @@
 \begin{document}
 
 \begin{abstract}
-  Deze bachelorproef onderzoekt hoe een AI-gedreven agent kan worden ingezet om softwaredependencies automatisch te analyseren en te beheren in combinatie met een dependencybot. Vanuit de vastgestelde problematiek — veel manueel werk, verhoogde technische schuld en beperkte context bij dependency-updates — wordt een proof-of-concept webapplicatie ontwikkeld die pull requests, changelogs en release notes automatisch uitleest, samenvat en van beslissingsvoorstellen voorziet voor een klein kernteam dat platform- en dependencybeheer opneemt.
+  Deze bachelorproef ontwikkelt een aparte webapplicatie (dashboard) met een from-scratch ontworpen AI-agent om dependency-updates automatisch te detecteren, analyseren en prioriteren voor het kernteam dat platform- en dependencybeheer opneemt binnen een bedrijf. Vanuit de vastgestelde problematiek — veel manueel werk bij het interpreteren van changelogs, ophopende technische schuld en beperkte context bij updates — controleert de applicatie GitHub-repositories op gebruikte dependencies, haalt versie-informatie op uit publieke registries (zoals npm) en laat de AI-agent changelogs en release notes samenvatten met indicatie van kriticiteit (security, bugfix, feature) en risico-impact.
 
-  De oplossing wordt opgebouwd met een moderne webstack (Next.js, .NET/Java en een relationele of NoSQL-database) en integreert met publieke package registries en een eigen dependencybot om updates te detecteren. Via een vergelijkende studie van geselecteerde AI-agent- en workflowplatformen wordt onderzocht in welke mate deze voldoen aan gedefinieerde functionele en niet-functionele vereisten, zoals integratiemogelijkheden, onderhoudbaarheid en performantie. Verwacht wordt dat de aanpak de manuele beoordelingslast merkbaar vermindert, de zichtbaarheid van technische schuld rond dependencies verhoogt en een herhaalbaar proces oplevert dat als basis kan dienen voor verdere uitrol binnen de organisatie.
+  Via een systematische aanpak met requirements-analyse, architectuurontwerp, proof-of-concept implementatie en gerichte vergelijking van AI-aanpakken wordt onderzocht hoe deze oplossing de manuele beoordelingslast kan verminderen en het overzicht op technische schuld kan verbeteren. De evaluatie met het kernteam focust op bruikbaarheid van het dashboard, duidelijkheid van AI-samenvattingen en ondersteuning bij prioritering. Verwacht wordt dat de aanpak een efficiënter, transparanter dependencybeheerproces oplevert dat herhaalbaar is en kan worden opgeschaald naar andere teams binnen de organisatie.
 \end{abstract}
 
 \tableofcontents

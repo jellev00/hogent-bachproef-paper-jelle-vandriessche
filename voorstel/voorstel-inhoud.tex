@@ -22,8 +22,8 @@ Softwareprojecten binnen bedrijven en organisaties maken gebruik van talrijke ex
 
 Het manueel opvolgen van dependency-updates vormt een groot probleem in softwareontwikkeling. Ontwikkelaars moeten regelmatig changelogs doorzoeken, compatibiliteit controleren en inschatten welke updates veilig kunnen worden doorgevoerd, wat in de praktijk veel tijd vraagt en vaak wordt uitgesteld.\parencite{Pashchenko2018,Behutiye2024} Onderzoek toont aan dat veel softwareprojecten hun dependencies niet systematisch bijhouden, waardoor een aanzienlijk deel verouderd raakt. Pashchenko et al.\ \parencite{Pashchenko2018} stellen bijvoorbeeld dat een belangrijk percentage kwetsbare dependencies relatief eenvoudig opgelost kan worden door een update, maar dat dit in de praktijk niet gebeurt wegens tijdsdruk en gebrek aan overzicht.
 Wanneer het updateproces niet systematisch gebeurt, stapelen onderhoudstaken zich op, waardoor het steeds moeilijker en tijdrovender wordt om de software up-to-date te houden. Dit fenomeen staat bekend als \emph{technische schuld} (technical debt): de achterstand die ontstaat doordat noodzakelijke verbeteringen of updates te lang worden uitgesteld, wat leidt tot hogere onderhoudskosten en complexiteit op lange termijn.\parencite{Behutiye2024,Ruiz2024} Empirisch onderzoek bevestigt dat technische schuld binnen bedrijven reële negatieve gevolgen heeft voor productiviteit en softwarekwaliteit.\parencite{Chalmers2020}
-Om deze last te verlichten, zetten veel organisaties al geautomatiseerde dependencybots in, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool voor het automatisch detecteren van kwetsbare of verouderde dependencies en het aanmaken van update-pull-requests.\textcite{GitHubDependabotDocs}} of Renovate.\footnote{Renovate is een open-source dependencybot die geautomatiseerde update-pull-requests en uitgebreide configuratiemogelijkheden biedt voor diverse platformen en package managers.\textcite{RenovateDocs}} Deze tools maken wel automatisch pull requests aan zodra er nieuwe versies beschikbaar zijn,\parencite{Erlenhov2022} maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een update al dan niet moet worden doorgevoerd.\parencite{Erlenhov2022}
-Deze bachelorproef richt zich daarom op het ontwikkelen van een \emph{aparte webapplicatie} (een dashboard) die integreert met GitHub-repositories van het bedrijf. Per project houdt deze applicatie de gebruikte dependencies bij, controleert via publieke registries (zoals npm,\footnote{npm is het standaardpakketbeheerplatform voor het JavaScript-ecosysteem.\autocite{NpmHome}}) of er nieuwe versies beschikbaar zijn en verzamelt de relevante changelogs en release notes. Een AI-agent, die in dit onderzoek \emph{from scratch} wordt ontworpen op basis van bestaande AI-modellen maar zonder voorafgebouwd agentframework, analyseert deze informatie, genereert begrijpelijke samenvattingen en beoordeelt in welke mate een update cruciaal is (bijvoorbeeld om veiligheidsredenen) of eerder optioneel.
+Om deze last te verlichten, zetten veel organisaties al geautomatiseerde dependencybots in, zoals Dependabot\footnote{Dependabot is de ingebouwde GitHub-tool die kwetsbare of verouderde dependencies detecteert en automatisch update-pull-requests aanmaakt.\url{https://github.com/dependabot}} of Renovate.\footnote{Renovate is een open-source tool die automatisch update-pull-requests voor dependencies aanmaakt.\url{https://docs.renovatebot.com} } Deze tools maken wel automatisch pull requests aan zodra er nieuwe versies beschikbaar zijn,\parencite{Erlenhov2022} maar geven doorgaans weinig context over de inhoud en impact van de wijziging. Ontwikkelaars verliezen daardoor nog steeds tijd aan het interpreteren van changelogs, het inschatten van risico's en het beslissen of een update al dan niet moet worden doorgevoerd.\parencite{Erlenhov2022}
+Deze bachelorproef richt zich daarom op het ontwikkelen van een \emph{aparte webapplicatie} (een dashboard) die integreert met GitHub-repositories van het bedrijf. Per project houdt deze applicatie de gebruikte dependencies bij, controleert via publieke registries (zoals npm,\footnote{npm is het standaard pakketbeheerplatform voor het JavaScript-ecosysteem.\url{https://www.npmjs.com}}) of er nieuwe versies beschikbaar zijn en verzamelt de relevante changelogs en release notes. Een AI-agent, die in dit onderzoek \emph{from scratch} wordt ontworpen op basis van bestaande AI-modellen maar zonder voorafgebouwd agentframework, analyseert deze informatie, genereert begrijpelijke samenvattingen en beoordeelt in welke mate een update cruciaal is (bijvoorbeeld om veiligheidsredenen) of eerder optioneel.
 De AI-agent geeft het kernteam via het dashboard inzicht in vragen zoals: welke dependencies zijn verouderd, wat is er precies veranderd in de nieuwe versie, zijn er bekende beveiligingsrisico's als niet wordt geüpdatet, en lijkt de update technisch laag- of hoogrisicovol. De webapplicatie leeft dus als een losstaand platform naast GitHub, maar gebruikt GitHub uitsluitend als bron voor project- en dependency-informatie en, eventueel, als kanaal om later pull requests of issues te creëren. Op die manier kan het updateproces slimmer, sneller en inzichtelijker worden gemaakt.
 
 \subsection{Onderzoeksvraag}
@@ -108,7 +108,7 @@ Recente literatuur verkent hoe AI-agents en multi-agentframeworks kunnen worden 
 
 Kim et al.\ introduceren met Bel Esprit een multi-agentframework voor het opbouwen van AI-model-pijplijnen, waarbij verschillende gespecialiseerde agents samenwerken om complexere taken modulair af te handelen.\autocite{Kim2024} Zhu et al.\ bestuderen in OAgents empirisch welke ontwerpkeuzes leiden tot effectieve agents, en bespreken onder meer het belang van duidelijke taakafbakening, robuuste toolintegratie en feedbackloops voor betrouwbare beslissingsondersteuning.\autocite{Zhu2025} Deze inzichten zijn relevant voor het ontwerp van een AI-agent die dependency-updates interpreteert, samenvat en beslissingsvoorstellen formuleert voor een onderhoudsteam.
 
-Naast generieke agentframeworks beschrijft Wali et al.\ hoe workflow-automatisering met n8n\footnote{n8n is een open-source low-code tool om workflows te automatiseren en API’s en systemen visueel te koppelen..\autocite{Wali2025}} operationele efficiëntie kan verhogen door repetitieve, gegevensgedreven processen te coördineren over verschillende systemen heen.\autocite{Wali2025} Hoewel hun casus zich richt op een financiële context, illustreert de studie dat low-code workflowtools geschikt zijn om integraties met externe APIs, databronnen en notificatiekanalen te realiseren, wat ook essentieel is voor een geautomatiseerde dependency-updatepipeline.\autocite{Wali2025}
+Naast generieke agentframeworks beschrijft Wali et al.\ hoe workflow-automatisering met n8n\footnote{n8n is een open-source tool om workflows en API’s visueel te automatiseren.\url{https://n8n.io}} operationele efficiëntie kan verhogen door repetitieve, gegevensgedreven processen te coördineren over verschillende systemen heen.\autocite{Wali2025} Hoewel hun casus zich richt op een financiële context, illustreert de studie dat low-code workflowtools geschikt zijn om integraties met externe APIs, databronnen en notificatiekanalen te realiseren, wat ook essentieel is voor een geautomatiseerde dependency-updatepipeline.\autocite{Wali2025}
 
 \subsection{Onderzoeksniche: AI-ondersteund dependencybeheer}
 
@@ -123,108 +123,96 @@ Deze bachelorproef positioneert zich precies in deze niche door een AI-gestuurde
 \section{Methodologie}
 \label{sec:methodologie}
 
-Dit onderzoek volgt hoofdzakelijk de opzet van een vergelijkende studie met proof-of-concept, aangevuld met literatuuronderzoek en een beperkte requirements-analyse bij een bedrijfscontext. Het doel is om enerzijds het probleem en de oplossingsruimte rond dependencybeheer in kaart te brengen, en anderzijds een prototype te bouwen en technisch te evalueren binnen een realistische ontwikkelomgeving.
+Dit onderzoek volgt de opzet van een vergelijkende studie met proof-of-concept, aangevuld met literatuuronderzoek en een requirements-analyse binnen een concrete bedrijfscontext. Het doel is om enerzijds het probleem en de oplossingsruimte rond dependencybeheer in kaart te brengen, en anderzijds een apart dashboard-prototype te bouwen en technisch te evalueren binnen een realistische ontwikkelomgeving.
 
-\subsection{Onderzoeksaanpak per onderzoeksvraag}
-\label{sec:onderzoeksaanpak}
+\subsection{Fase 1 - Verdiepende literatuurstudie en probleemverkenning}
+\label{sec:fase1}
 
-Om de eerste groep deelvragen, die gericht zijn op het beter begrijpen van het probleem, te beantwoorden, wordt een systematische literatuurstudie uitgevoerd rond dependency management, kwetsbare dependencies, technische schuld en bestaande dependencybots. Hierbij wordt voornamelijk gebruikgemaakt van wetenschappelijke artikels, technische rapporten en documentatie van industriële tools.
+In de eerste fase van de bachelorproef wordt de probleemcontext verder uitgediept aan de hand van een systematische literatuurstudie rond dependency management, kwetsbare dependencies, technische schuld en bestaande dependencybots. Daarnaast wordt vakliteratuur over AI-agents en workflow-automatisering bestudeerd om na te gaan welke concepten en benaderingen relevant zijn voor een AI-gestuurd dependency-dashboard.
 
-Voor de deelvragen die gericht zijn op het definiëren van de oplossing, wordt een combinatie van requirements-analyse, proof-of-concept-ontwikkeling en technische experimenten ingezet. De requirements-analyse gebeurt via gesprekken met de betrokken medewerkers binnen het bedrijf (vooral leden van het kernteam dat platform- en dependencybeheer opneemt), gericht op het expliciteren van:
+Tijdens deze fase worden ook één of enkele representatieve projecten van het bedrijf geselecteerd en geanalyseerd (projectstructuur, gebruikte technologieën, dependency-ecosystemen, huidige processen rond updates). De belangrijkste deliverables zijn:
 \begin{itemize}
-  \item functionele eisen (detectie van updates, analyse en samenvatting van changelogs en release notes).;
-  \item niet-functionele eisen (performantie, integratiemogelijkheden, onderhoudbaarheid, beheer van regels en policies, auditlogging).
-\end{itemize}
-De resultaten van deze analyse vormen de basis voor een set concrete evaluatiecriteria die later gebruikt worden om de geselecteerde AI-agent- en workflowplatformen te beoordelen.
-
-\subsection{Proof-of-concept en technische implementatie}
-\label{sec:poc-implementatie}
-
-De kern van het onderzoek bestaat uit het bouwen van een proof-of-concept webapplicatie die:
-\begin{itemize}
-  \item afhankelijkheden per project bijhoudt en koppelt aan informatie uit publieke registries;
-  \item inkomende dependency-updates inleest en de bijbehorende changelogs en release notes verwerkt;
-  \item via een AI-agent tekstuele samenvattingen en beslissingsvoorstellen genereert;
-  \item het kernteam een overzicht biedt van openstaande updates, prioriteiten en voorgestelde acties.
+  \item een uitgewerkte en geactualiseerde literatuurstudie;
+  \item een scherpere probleemomschrijving toegespitst op de gekozen bedrijfscontext en projecten;
+  \item een eerste set geïnformeerde hypotheses over de verwachte impact van een AI-gestuurd dependency-dashboard.
 \end{itemize}
 
-Technisch wordt de proof-of-concept gerealiseerd met:
+\subsection{Fase 2 - Requirements-analyse en architectuurontwerp}
+\label{sec:fase2}
+
+In de tweede fase wordt eerst een gerichte requirements-analyse uitgevoerd in samenwerking met de co-promotor Via interviews en workshops worden functionele en niet-functionele eisen expliciet gemaakt, zoals:
 \begin{itemize}
-  \item een \texttt{Next.js}-frontend voor de gebruikersinterface;
-  \item een backend in C\# (.NET) of Java (Spring Boot), afhankelijk van de voorkeuren en standaardtechnologieën binnen het bedrijf;
-  \item een database-oplossing (PostgreSQL, MongoDB of Supabase) voor opslag van gebruikers, projecten, dependency-informatie en logging.
+  \item functionele eisen: beheer van projecten en dependencies in het dashboard, detectie van nieuwe versies via publieke registries, analyse en samenvatting van changelogs en release notes, aanduiding van kriticiteit (security, bugfix, feature), prioritering van updates;
+  \item niet-functionele eisen: integratie met GitHub, schaalbaarheid, betrouwbaarheid, traceerbaarheid (logging en audittrail), gebruiksvriendelijkheid en onderhoudbaarheid.
 \end{itemize}
 
-De AI-agentlaag wordt eerst in een basisopzet gerealiseerd (bijvoorbeeld één gekozen platform of framework), waarbij de focus ligt op het correct interpreteren en samenvatten van changelogs en release notes. Daarna wordt onderzocht in welke mate alternatieve agent- of workflowplatformen kunnen worden ingezet om dezelfde functionaliteit te ondersteunen, zodat een zinvolle vergelijking mogelijk is.
-
-\subsection{Vergelijkende evaluatie van platformen}
-\label{sec:vergelijkende-evaluatie}
-
-Om de onderzoeksvraag rond de geschiktheid van verschillende AI-agent- en workflowplatformen te beantwoorden, wordt een vergelijkende evaluatie uitgewerkt. Op basis van de eerder gedefinieerde vereisten worden meetbare criteria opgesteld, zoals:
+Op basis van deze requirements wordt vervolgens een systeemarchitectuur ontworpen voor de webapplicatie en de from-scratch ontworpen AI-agent. De architectuur beschrijft onder meer de globale componenten (frontend, backend, databank, integraties met GitHub en registries), de verantwoordelijkheden per component, de datastromen (bijvoorbeeld van dependency-informatie naar AI-analyse en terug naar het dashboard) en de plaats van eventueel ondersteunende workflow- of agentplatformen. Deliverables van fase 2 zijn:
 \begin{itemize}
-  \item integratiemogelijkheden met Git-repositories en externe APIs;
-  \item complexiteit van configuratie en ontwikkelervaring (bijvoorbeeld aantal stappen om een eerste workflow op te zetten);
-  \item onderhoudbaarheid (structuur van workflows, versiebeheer, herbruikbaarheid van componenten);
-  \item performantie-indicatoren, zoals doorlooptijd voor het verwerken van een set voorbeelden.
+  \item een requirementsdocument met duidelijke prioritering;
+  \item een architectuurbeschrijving (diagrammen, componentbeschrijvingen, datamodellen);
+  \item een lijst van geselecteerde technologieën en tools, gemotiveerd vanuit de requirements.
 \end{itemize}
 
-Er wordt een reeks gestandaardiseerde scenario's gedefinieerd (bijvoorbeeld een set representatieve dependency-updates met verschillende types wijzigingen en risico's). Voor elk geselecteerd platform wordt dezelfde set scenario's geïmplementeerd en uitgevoerd, zodat de resultaten langs de gedefinieerde criteria objectief kunnen worden vergeleken. De uitkomsten van deze experimenten worden gebruikt om de sterktes en zwaktes van elk platform in de context van dit specifieke probleemdomein te identificeren.
+\subsection{Fase 3 - Implementatie van het proof-of-concept}
+\label{sec:fase3}
 
-\subsection{Fasering en tijdsplanning}
-\label{sec:fasering-tijdsplanning}
+In fase 3 wordt de ontworpen architectuur omgezet in een werkend proof-of-concept. De kern bestaat uit een aparte webapplicatie (dashboard) waarin per project de gebruikte dependencies worden bijgehouden en verrijkt met informatie uit publieke registries zoals npm. De applicatie haalt dependency-informatie op uit GitHub-projecten (bijvoorbeeld via repository configuratiebestanden) en slaat deze gegevens op in een centrale databank.
 
-Het onderzoek wordt opgedeeld in opeenvolgende fasen met bijhorende deliverables,
-zoals weergegeven in Figuur~\ref{fig:gantt}.
-
+Parallel wordt de AI-agentlaag geïmplementeerd in de backend. Deze agent ontvangt changelog- en release-note-informatie, genereert beknopte samenvattingen en beoordeelt de aard en vermoedelijke impact van updates (bijvoorbeeld beveiligingsfix, bugfix, nieuwe functionaliteit, potentieel brekende wijziging). De frontend visualiseert voor het kernteam de status van dependencies, aanbevolen acties en de door de AI gegenereerde toelichting. Deliverables van fase 3 zijn:
 \begin{itemize}
-  \item \textbf{Fase 1 -- Oriëntatie en literatuurstudie (reeds lopend):}
-        in deze fase worden de probleemstelling verfijnd, relevante bronnen verzameld en geanalyseerd, en potentiële co-promotoren en bedrijfscontexten verkend. Deliverables: onderzoeksvoorstel, voorlopige literatuurstudie, bevestiging of afwijzing van co-promotor(en).
-
-  \item \textbf{Fase 2 -- Requirements-analyse en architectuurontwerp:}
-        gesprekken met het betrokken bedrijf om de concrete requirements en context te verduidelijken, uitwerking van use-cases en systeemarchitectuur van de proof-of-concept. Deliverables: requirementsdocument, architectuurschets, lijst van evaluatiecriteria voor de platformen.
-
-  \item \textbf{Fase 3 -- Implementatie van de proof-of-concept:}
-        ontwikkeling van frontend, backend en database, integratie met dependencybot en registries, en eerste versie van de AI-agent voor changelog- en release note-analyse. Deliverables: werkend prototype, technische documentatie, testcases en voorbeelddata (updates, changelogs).
-
-  \item \textbf{Fase 4 -- Vergelijkende evaluatie en experimenten:}
-        implementatie van de gestandaardiseerde scenario's op de geselecteerde platformen, uitvoeren van metingen (bijvoorbeeld doorlooptijd, configuratie-inspanning) en analyse van de resultaten. Deliverables: experimenteel protocol, ruwe meetdata, geanalyseerde resultaten en tabellen/grafieken.
-
-  \item \textbf{Fase 5 -- Rapportering en verwachte conclusie:}
-        uitwerken van de uiteindelijke bachelorproef, formuleren van conclusies en aanbevelingen op basis van de resultaten, en reflectie op eventuele verschillen tussen de verwachte en daadwerkelijke uitkomsten. Deliverables: volledige bachelorproef, presentatie- en demonstratiemateriaal.
+  \item een werkend prototype van het dashboard met integratie naar GitHub en één of meerdere dependency-registries;
+  \item een eerste versie van de AI-agent die changelogs en release notes verwerkt en samenvat;
+  \item technische documentatie over de implementatie (architectuur, API’s, datamodellen).
 \end{itemize}
 
-%---------- Verwachte resultaten ----------------------------------------------
-\section{Verwacht resultaat}
-\label{sec:verwachte_resultaten}
+\subsection{Fase 4 - Vergelijkende onderbouwing van architectuur en AI-aanpak}
+\label{sec:fase4}
 
-Op basis van de probleemstelling en onderzoeksdoelstelling wordt verwacht dat het ontwikkelde proof-of-concept in staat zal zijn om dependency updates automatisch te detecteren, te analyseren en in een compacte, begrijpelijke vorm te communiceren naar het verantwoordelijke kernteam. Concreet wordt verwacht dat de AI-agent changelogs, release notes kan omzetten naar heldere samenvattingen met een indicatie van het type wijziging (beveiligingsfix, bugfix, nieuwe functionaliteit) en de vermoedelijke impact op het project.
-
-Verder wordt verwacht dat het systeem de werklast voor het kernteam merkbaar reduceert door een deel van de beslissingen rond ``veilige'' updates te automatiseren. Denk daarbij aan scenario's waarin kleine, backward compatible updates te updates (bijvoordbeeld patch- of beperkte minor-releases) automatisch kunnen worden goedgekeurd of voorbereid voor merge, terwijl potentieel risicovolle major-updates expliciet gemarkeerd worden voor manuele review. Indien er voldoende data verzameld kan worden uit tests of logbestanden, worden bovendien verwacht dat er minimaal een eerste, kwantitatieve inschatting kan worden gemaakt van de tijdswinst (bijvoorbeeld aantal manuele reviews per maand, gemiddelde doorlooptijd per update) in vergelijking met de situatie voor de invoering van de tool.
-
-De doelgroep van dit onderzoek, namelijk het kleine kernteam dat binnen het bedrijf verantwoordelijk is voor dependencybeheer en platformonderhoud, haalt hieruit meerwaarde doordat zij:
-
+De vierde fase richt zich op het onderbouwen en verfijnen van de gemaakte ontwerpkeuzes aan de hand van een gerichte vergelijking van mogelijke technologieën en AI-aanpakken. Op basis van de requirements uit fase 2 wordt een set evaluatiecriteria opgesteld, zoals:
 \begin{itemize}
-  \item sneller kunnen bepalen welke updates prioriteit hebben en welke zonder veel risico kunnen worden doorgevoerd;
-  \item minder tijd verliezen aan het doorpluizen van changelogs en release notes;
-  \item een beter overzicht krijgen van de actuele staat van dependencies en de bijhorende technische schuld;
-  \item een herhaalbaar proces in handen krijgen dat later opgeschaald kan worden naar andere teams of projecten binnen de organisatie.
+  \item geschiktheid van verschillende AI-modellen en agentconfiguraties voor changelog- en release-note-analyse;
+  \item mogelijkheid om workflow- of agentplatformen in te zetten ter ondersteuning van orkestratie en monitoring;
+  \item impact van verschillende architecturale varianten (bijvoorbeeld synchronische vs.\ asynchronische verwerking) op responstijd en schaalbaarheid.
 \end{itemize}
 
-%---------- Verwachte conclusies ----------------------------------------------
-\section{Verwacht conclusie}
-\label{sec:verwachte_conclusies}
+Aan de hand van een aantal representatieve scenario’s (bijvoorbeeld updates met alleen kleine bugfixes, updates met beveiligingspatches, updates met potentieel brekende wijzigingen) worden alternatieve oplossingen experimenteel uitgeprobeerd en vergeleken met het bestaande prototype. De focus ligt hierbij niet op een brede marktanalyse, maar op het versterken of bijsturen van de gekozen architectuur en AI-aanpak voor deze specifieke use case.
+Deliverables van fase 4 zijn:
+\begin{itemize}
+  \item experimentele beschrijvingen van de uitgeprobeerde varianten;
+  \item meetresultaten (bijvoorbeeld responstijd, interpretatiekwaliteit, ontwikkelinspanning);
+  \item een gemotiveerde keuze of bevestiging van de uiteindelijke architectuur en AI configuratie.
+\end{itemize}
 
-Op basis van de literatuur en de beoogde proof-of-concept wordt verwacht dat de bachelorproef zal aantonen dat een AI-gestuurde laag de manuele beoordelinglast rond dependency-updates kan verlagen, zonder daarbij de controle volledig uit handen te geven. Verwacht wordt dat de resultaten zullen aangeven dat het combineren van automatische detectie met een AI-agent voor interpretatie en samenvatting een efficiënter en transparanter updateproces oplevert voor het kernteam.
+\subsection{Fase 5 - Evaluatie en rapportering}
+\label{sec:fase5}
 
-Verder wordt verwacht dat uit de evaluatie van de geselecteerde AI-agent of workflowplatformen zal blijken dat niet een enkel platform op alle criteria domineert, maar dat er duidelijke verschillen zijn op het vlak van integratiemogelijkheden, gebruiksgemak, onderhoudbaarheid en performantie. De verwachte conclusie is dat op basis van de gedefinieerde vereisten een onderbouwde aanbeveling kan worden geformuleerd voor het meest geschikte platform binnen de context van het betrokken bedrijf, en dat de inzet van een AI-agent een zinvolle stap is in het beperken van technische schuld rond dependencies. Indien de uiteindelijke resultaten afwijken van deze verwachtingen, biedt dit een interessante basis om te analyseren welke aanames niet klopten en welke randvoorwaarden cruciaal zijn voor het succes van AI-ondersteund dependencybeheer.
+In de laatste fase wordt het proof-of-concept geëvalueerd met de co-promotor binnen het bedrijf, aan de hand van een combinatie van demonstraties, gericht feedbackgesprekken en, waar mogelijk, beperkte praktijktesten op echte of realistische projecten. De evaluatie focust op bruikbaarheid van het dashboard, vermindering van manuele analysetijd, duidelijkheid van de AI samenvattingen en ondersteuning bij de prioritering van updates.
 
+De bevindingen uit deze evaluatie worden gecombineerd met de resultaten van de experimentele vergelijking uit fase 4 om de onderzoeksvragen te beantwoorden en de onderzoekshypothesen te toetsen. Deliverables van fase 5 zijn:
+\begin{itemize}
+  \item een synthese van de evaluatie met de co-promotor (inclusief sterktes, beperkingen en verbetervoorstellen);
+  \item de uitgewerkte bachelorproef met een geïntegreerde beschrijving van probleem, methode, resultaten en conclusies;
+  \item aanbevelingen voor verdere ontwikkeling en mogelijke integratie van het systeem in de bredere ontwikkelprocessen van het bedrijf.
+\end{itemize}
+
+De globale fasering en tijdsplanning van het onderzoek wordt weergegeven in Figuur~\ref{fig:gantt}.
+
+%---------- Verwachte resultaten en conclusies ----------------------------------------------
+
+\section{Verwacht resultaat en conclusie}
+\label{sec:verwachte_resultaten_en_conclusie}
+
+Op basis van de probleemstelling en onderzoeksdoelstelling wordt verwacht dat het proof-of-concept in staat zal zijn om dependency-updates automatisch te detecteren, te analyseren en in een compacte, begrijpelijke vorm te presenteren. De AI-agent zal changelogs en release notes samenvatten, het type wijziging (bijvoorbeeld beveiligingsfix, bugfix of nieuwe functionaliteit) aanduiden en een indicatie geven van de vermoedelijke impact op het project.
+
+Verder wordt verwacht dat de werklast daalt doordat een deel van de beslissingen rond relatief veilige, backward compatible updates (zoals patch- of beperkte minor-releases) eenvoudiger of gedeeltelijk geautomatiseerd kan worden, terwijl potentieel risicovolle major-updates expliciet voor manuele review gemarkeerd blijven. Indien er voldoende meetdata beschikbaar komt (bijvoorbeeld logbestanden of tijdsregistraties), kan een eerste, kwantitatieve inschatting gemaakt worden van de tijdswinst in vergelijking met de huidige, hoofdzakelijk manuele aanpak.
+
+De doelgroep, haalt hieruit meerwaarde doordat zij sneller prioriteiten kunnen bepalen, minder tijd verliezen aan het doorpluizen van changelogs en release notes en een beter overzicht krijgen van de actuele staat van dependencies en de bijhorende technische schuld. Daarnaast ontstaat een herhaalbaar proces dat later kan opgeschaald worden naar andere teams of projecten binnen de organisatie.
+
+Verwacht wordt dat de evaluatie van de gekozen AI-agent- en/of workflowaanpak zal tonen dat geen enkele oplossing op alle criteria de beste is, maar dat duidelijke verschillen zichtbaar worden op het vlak van integratiemogelijkheden, gebruiksgemak, onderhoudbaarheid en performantie. Op basis van deze inzichten kan een onderbouwde aanbeveling worden geformuleerd voor een architectuur en toolkeuze die het best aansluit bij de context van het bedrijf, en kan geconcludeerd worden dat een AI-gestuurde laag een zinvolle stap is in het beperken van technische schuld rond dependencies. Indien de uiteindelijke resultaten afwijken van deze verwachtingen, biedt dit aanleiding om te onderzoeken welke aannames niet bleken te kloppen en welke randvoorwaarden essentieel zijn voor succesvol AI-ondersteund dependencybeheer.
 
 \clearpage
 
 %---------- Figuren ----------------------------------------------
-\section{Figuren}
-\label{sec:Figuren}
-
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.85\paperwidth, keepaspectratio]{img/Figure_1.png}
