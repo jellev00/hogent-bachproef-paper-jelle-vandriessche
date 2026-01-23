@@ -140,10 +140,10 @@ Tijdens deze fase worden ook één of enkele representatieve projecten van het b
 \subsection{Fase 2 - Requirements-analyse en architectuurontwerp}
 \label{sec:fase2}
 
-In de tweede fase wordt eerst een gerichte requirements-analyse uitgevoerd in samenwerking met de co-promotor Via interviews en workshops worden functionele en niet-functionele eisen expliciet gemaakt, zoals:
+In de tweede fase wordt eerst een gerichte requirements-analyse uitgevoerd in samenwerking met de co-promotor via interviews en workshops worden functionele en niet-functionele eisen expliciet gemaakt, zoals:
 \begin{itemize}
-  \item functionele eisen: beheer van projecten en dependencies in het dashboard, detectie van nieuwe versies via publieke registries, analyse en samenvatting van changelogs en release notes, aanduiding van kriticiteit (security, bugfix, feature), prioritering van updates;
-  \item niet-functionele eisen: integratie met GitHub, schaalbaarheid, betrouwbaarheid, traceerbaarheid (logging en audittrail), gebruiksvriendelijkheid en onderhoudbaarheid.
+  \item functionele eisen: integratie met GitHub, beheer van projecten en dependencies in het dashboard, detectie van nieuwe versies via publieke registries, analyse en samenvatting van changelogs en release notes, aanduiding van kriticiteit (security, bugfix, feature), prioritering van updates;
+  \item niet-functionele eisen: schaalbaarheid, betrouwbaarheid, traceerbaarheid (logging en audittrail), gebruiksvriendelijkheid en onderhoudbaarheid.
 \end{itemize}
 
 Op basis van deze requirements wordt vervolgens een systeemarchitectuur ontworpen voor de webapplicatie en de from-scratch ontworpen AI-agent. De architectuur beschrijft onder meer de globale componenten (frontend, backend, databank, integraties met GitHub en registries), de verantwoordelijkheden per component, de datastromen (bijvoorbeeld van dependency-informatie naar AI-analyse en terug naar het dashboard) en de plaats van eventueel ondersteunende workflow- of agentplatformen. Deliverables van fase 2 zijn:
@@ -156,41 +156,41 @@ Op basis van deze requirements wordt vervolgens een systeemarchitectuur ontworpe
 \subsection{Fase 3 - Implementatie van het proof-of-concept}
 \label{sec:fase3}
 
-In fase 3 wordt de ontworpen architectuur omgezet in een werkend proof-of-concept. De kern bestaat uit een aparte webapplicatie (dashboard) waarin per project de gebruikte dependencies worden bijgehouden en verrijkt met informatie uit publieke registries zoals npm. De applicatie haalt dependency-informatie op uit GitHub-projecten (bijvoorbeeld via repository configuratiebestanden) en slaat deze gegevens op in een centrale databank.
+In fase 3 wordt de ontworpen architectuur omgezet in een werkend proof-of-concept. De kern bestaat uit een aparte webapplicatie (dashboard) waarin per project de gebruikte dependencies worden bijgehouden en verrijkt met informatie uit publieke registries zoals npm. De applicatie werkt vanaf het begin met één of meerdere reële GitHub-repositories van het bedrijf, zodat de proof-of-concept onmiddellijk getest wordt in een realistische context. Dependency-informatie wordt automatisch uit deze repositories gehaald (bijvoorbeeld via repositoryconfiguratiebestanden) en opgeslagen in een centrale databank.
 
-Parallel wordt de AI-agentlaag geïmplementeerd in de backend. Deze agent ontvangt changelog- en release-note-informatie, genereert beknopte samenvattingen en beoordeelt de aard en vermoedelijke impact van updates (bijvoorbeeld beveiligingsfix, bugfix, nieuwe functionaliteit, potentieel brekende wijziging). De frontend visualiseert voor het kernteam de status van dependencies, aanbevolen acties en de door de AI gegenereerde toelichting. Deliverables van fase 3 zijn:
+Parallel wordt de AI-agentlaag geïmplementeerd in de backend. In deze fase worden drie concrete AI-agentoplossingen opgezet en geïntegreerd in hetzelfde dashboard: een agent op basis van OpenAI Agent Builder, een workflow met n8n en een agentconfiguratie met Flowise. Elk van deze varianten ontvangt changelog- en release-note-informatie, genereert beknopte samenvattingen en beoordeelt de aard en vermoedelijke impact van updates (bijvoorbeeld beveiligingsfix, bugfix, nieuwe functionaliteit, potentieel brekende wijziging). De frontend visualiseert de status van dependencies, aanbevolen acties en de door de verschillende AI-varianten gegenereerde toelichting. Deliverables van fase 3 zijn:
 \begin{itemize}
-  \item een werkend prototype van het dashboard met integratie naar GitHub en één of meerdere dependency-registries;
-  \item een eerste versie van de AI-agent die changelogs en release notes verwerkt en samenvat;
-  \item technische documentatie over de implementatie (architectuur, API’s, datamodellen).
+  \item een werkend prototype van het dashboard met integratie naar GitHub en één dependency-registries;
+  \item drie geïmplementeerde AI-agentvarianten (OpenAI Agent Builder, n8n, Flowise) die changelogs en release notes verwerken en samenvatten;
+  \item technische documentatie over de implementatie (architectuur, API’s, datamodellen en integratiepunten voor de agents).
 \end{itemize}
 
 \subsection{Fase 4 - Vergelijkende onderbouwing van architectuur en AI-aanpak}
 \label{sec:fase4}
 
-De vierde fase richt zich op het onderbouwen en verfijnen van de gemaakte ontwerpkeuzes aan de hand van een gerichte vergelijking van mogelijke technologieën en AI-aanpakken. Op basis van de requirements uit fase 2 wordt een set evaluatiecriteria opgesteld, zoals:
+De vierde fase richt zich op het onderbouwen en verfijnen van de gemaakte ontwerpkeuzes aan de hand van een gerichte vergelijking van de drie uitgewerkte AI-agentoplossingen en eventuele architecturale varianten. Op basis van de requirements uit fase 2 wordt een set \emph{eenvoudig meetbare} evaluatiecriteria opgesteld, zoals:
 \begin{itemize}
-  \item geschiktheid van verschillende AI-modellen en agentconfiguraties voor changelog- en release-note-analyse;
-  \item mogelijkheid om workflow- of agentplatformen in te zetten ter ondersteuning van orkestratie en monitoring;
-  \item impact van verschillende architecturale varianten (bijvoorbeeld synchronische vs.\ asynchronische verwerking) op responstijd en schaalbaarheid.
+  \item gemiddelde verwerkingstijd per update (doorlooptijd van input tot samenvatting);
+  \item technische inspanning voor opzet en onderhoud (bijvoorbeeld aantal configuratiestappen, hoeveelheid code);
+  \item kwaliteit van samenvattingen gemeten via een eenvoudige beoordelingsschaal door de co-promotor (bijvoorbeeld 1–5 voor duidelijkheid en relevantie);
+  \item fout- of faalratio (bijvoorbeeld aantal mislukte runs of onvolledige resultaten per tien updates).
 \end{itemize}
 
-Aan de hand van een aantal representatieve scenario’s (bijvoorbeeld updates met alleen kleine bugfixes, updates met beveiligingspatches, updates met potentieel brekende wijzigingen) worden alternatieve oplossingen experimenteel uitgeprobeerd en vergeleken met het bestaande prototype. De focus ligt hierbij niet op een brede marktanalyse, maar op het versterken of bijsturen van de gekozen architectuur en AI-aanpak voor deze specifieke use case.
-Deliverables van fase 4 zijn:
+Aan de hand van een aantal representatieve scenario’s (bijvoorbeeld updates met alleen kleine bugfixes, updates met beveiligingspatches, updates met potentieel brekende wijzigingen) worden OpenAI Agent Builder, n8n en Flowise onder dezelfde omstandigheden getest en met elkaar vergeleken. De focus ligt hierbij niet op een brede marktanalyse, maar op het versterken of bijsturen van de gekozen architectuur en het bepalen welke aanpak het meest geschikt is als basis voor het verdere gebruik van het dashboard in deze specifieke use case. Deliverables van fase 4 zijn:
 \begin{itemize}
   \item experimentele beschrijvingen van de uitgeprobeerde varianten;
-  \item meetresultaten (bijvoorbeeld responstijd, interpretatiekwaliteit, ontwikkelinspanning);
-  \item een gemotiveerde keuze of bevestiging van de uiteindelijke architectuur en AI configuratie.
+  \item meetresultaten volgens de gedefinieerde criteria (doorlooptijd, inspanning, beoordelingsscores, foutpercentages);
+  \item een gemotiveerde keuze of bevestiging van de uiteindelijke architectuur en AI-configuratie.
 \end{itemize}
 
 \subsection{Fase 5 - Evaluatie en rapportering}
 \label{sec:fase5}
 
-In de laatste fase wordt het proof-of-concept geëvalueerd met de co-promotor binnen het bedrijf, aan de hand van een combinatie van demonstraties, gericht feedbackgesprekken en, waar mogelijk, beperkte praktijktesten op echte of realistische projecten. De evaluatie focust op bruikbaarheid van het dashboard, vermindering van manuele analysetijd, duidelijkheid van de AI samenvattingen en ondersteuning bij de prioritering van updates.
+In de laatste fase wordt het proof-of-concept geëvalueerd met de co-promotor binnen het bedrijf, aan de hand van een combinatie van demonstraties, gericht feedbackgesprekken en, waar mogelijk, beperkte praktijktesten realistische projecten. De evaluatie focust op bruikbaarheid van het dashboard, de gemeten vermindering van manuele analysetijd (bijvoorbeeld aantal geanalyseerde updates per uur vóór en na gebruik), de door de co-promotor toegekende beoordelingsscores voor duidelijkheid van de AI-samenvattingen en de mate waarin het systeem helpt bij de prioritering van updates.
 
-De bevindingen uit deze evaluatie worden gecombineerd met de resultaten van de experimentele vergelijking uit fase 4 om de onderzoeksvragen te beantwoorden en de onderzoekshypothesen te toetsen. Deliverables van fase 5 zijn:
+De bevindingen uit deze evaluatie worden gecombineerd met de kwantitatieve resultaten van fase 4 om de onderzoeksvragen te beantwoorden en de onderzoekshypothesen te toetsen. Deliverables van fase 5 zijn:
 \begin{itemize}
-  \item een synthese van de evaluatie met de co-promotor (inclusief sterktes, beperkingen en verbetervoorstellen);
+  \item een synthese van de evaluatie met de co-promotor (inclusief gemeten tijdswinst, kwaliteitsbeoordelingen en verbetervoorstellen);
   \item de uitgewerkte bachelorproef met een geïntegreerde beschrijving van probleem, methode, resultaten en conclusies;
   \item aanbevelingen voor verdere ontwikkeling en mogelijke integratie van het systeem in de bredere ontwikkelprocessen van het bedrijf.
 \end{itemize}
