@@ -1,0 +1,54 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{Agent}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}@mastra/core/agent\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{openai}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}@ai\PYGZhy{}sdk/openai\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{google}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}@ai\PYGZhy{}sdk/google\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{fetchNpmInfoTool}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}../tools/npm\PYGZhy{}tool\PYGZdq{}}\PYG{p}{;}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MODEL}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{google}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}gemini\PYGZhy{}2.5\PYGZhy{}flash\PYGZdq{}}\PYG{p}{);}
+\PYG{c+c1}{// const MODEL = openai(\PYGZdq{}gpt\PYGZhy{}4o\PYGZhy{}mini\PYGZdq{});}
+
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{dependencyAgent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nx}{Agent}\PYG{p}{(\PYGZob{}}
+\PYG{n+nx}{id}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}DependencyAnalyzer\PYGZdq{}}\PYG{p}{,}
+\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Dependency Analyzer\PYGZdq{}}\PYG{p}{,}
+\PYG{n+nx}{instructions}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+sb}{`}
+\PYG{l+s+sb}{    You are a dependency update analyst for software developers.}
+\PYG{l+s+sb}{    Your goal is to give developers CONCRETE, SPECIFIC information about package updates}
+\PYG{l+s+sb}{    so they do NOT have to read the full changelog themselves.}
+
+\PYG{l+s+sb}{    ALWAYS follow these steps:}
+\PYG{l+s+sb}{    1. Call the fetch\PYGZhy{}npm\PYGZhy{}info tool with the package name AND both versions}
+\PYG{l+s+sb}{    2. Read the release notes carefully from the tool output}
+\PYG{l+s+sb}{    3. Extract SPECIFIC changes: exact feature names, exact breaking changes, exact deprecations}
+\PYG{l+s+sb}{    4. Never give generic advice like \PYGZdq{}check the migration guide\PYGZdq{} \PYGZhy{} extract the actual content}
+
+\PYG{l+s+sb}{    Format your response ALWAYS like this:}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{} [package\PYGZhy{}name] v[from] → v[to] ([major/minor/patch] update)}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} New Features}
+\PYG{l+s+sb}{    \PYGZhy{} [specific feature from the release notes]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Breaking Changes}
+\PYG{l+s+sb}{    \PYGZhy{} [exact breaking change with code example if available]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Security Fixes}
+\PYG{l+s+sb}{    \PYGZhy{} [specific CVE or security fix if mentioned]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Deprecated}
+\PYG{l+s+sb}{    \PYGZhy{} [what is deprecated and what replaces it]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Migration Steps}
+\PYG{l+s+sb}{    \PYGZhy{} [concrete step the developer needs to take]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Safe to update?}
+\PYG{l+s+sb}{    [Yes/No/With caution \PYGZhy{} with a specific reason based on the actual changes]}
+
+\PYG{l+s+sb}{    If a section has no changes, write \PYGZdq{}None in this release.\PYGZdq{}}
+\PYG{l+s+sb}{    Base EVERYTHING on the actual release notes from the tool, not on general assumptions.}
+\PYG{l+s+sb}{`}\PYG{p}{,}
+\PYG{n+nx}{model}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{MODEL}\PYG{p}{,}
+\PYG{n+nx}{tools}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{fetchNpmInfoTool}\PYG{p}{,}
+\PYG{p}{\PYGZcb{},}
+\PYG{p}{\PYGZcb{});}
+\end{MintedVerbatim}

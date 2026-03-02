@@ -68,6 +68,29 @@ Parallel wordt de AI-agentlaag geïmplementeerd in de backend. In deze fase word
     \item technische documentatie over de implementatie (architectuur, API’s, datamodellen en integratiepunten voor de agents).
 \end{itemize}
 
+\subsubsection{Implementatie van de Mastra-agent}
+\label{sec:mastra-implementatie}
+
+Voor de eerste AI-integratie in het dashboard wordt gebruikgemaakt van Mastra, een Typescript-framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld \texttt{gemini-2.5-flash} of \texttt{gpt-4o-mini}) met een eigen tool \texttt{fetchNpmInfoTool}, die informatie ophaalt uit de npm-registry en bijhorende release notes van Github.
+
+De agent is geconfigureerd met duidelijke instructies en een vast outputformaat, zodat ontwikkelaars snel een gestructureerd overzicht krijgen van nieuwe features, breaking changes, security fixes, deprecations, migratiestappen en een advies of de update veilig is. Onderstaand codefragment toont de definitie van de agent in Mastra:
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=\textwidth,keepaspectratio]{img/dependency-agent.png}
+%   \caption[Mastra dependency-agent]{Mastra-agent voor analyse van dependency-updates}
+%   \label{fig:mastra-agent-config}
+% \end{figure}
+
+De agent maakt gebruik van een custom tool \texttt{fetchNpmInfoTool} om zowel metadata uit de npm-registry als release notes uit Github op te halen. Deze tool accepteert de packagenaam en de versies \texttt{fromVersion} en \texttt{toVersion}, zoekt de repository-URL in de npm-metadata, en probeert vervolgens de relevante GitHub-releases te vinden. Als er geen release is voor de exacte tag, wordt teruggevallen op de laatste releases, zodat de agent steeds over zo volledig mogelijke changelog-informatie beschikt. Het resultaat (beschrijving, homepage, repository en samengestelde \texttt{releaseNotes}) wordt gereialiseerd naar een gestructureerd object waar de agent verder op kan redeneren. De implementatie van de tool is weergegeven in Listing~\ref{lst:mastra-tool}.
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=\textwidth,keepaspectratio]{img/npm-tool.png}
+%   \caption[Mastra-tool voor npm- en GitHub-informatie]{Tool \texttt{fetchNpmInfoTool} voor het ophalen van npm-metadata en GitHub-release notes}
+%   \label{fig:mastra-tool}
+% \end{figure}
+
 \subsection{Fase 4 - Vergelijkende onderbouwing van architectuur en AI-aanpak}
 \label{sec:fase4}
 
@@ -100,5 +123,14 @@ De bevindingen uit deze evaluatie worden gecombineerd met de kwantitatieve resul
 
 De globale fasering en tijdsplanning van het onderzoek wordt weergegeven in Figuur~\ref{fig:gantt}.
 
-\lipsum[21-25]
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.85\paperwidth, keepaspectratio]{img/Figure_1.png}
+  \caption{Fasering en tijdsplanning van het onderzoek}
+  \label{fig:gantt}
+\end{figure}
+
+\clearpage
+
+% \lipsum[21-25]
 
