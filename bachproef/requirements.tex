@@ -1,0 +1,320 @@
+%%=============================================================================
+%% Requirements Analyse
+%%=============================================================================
+
+\chapter{\IfLanguageName{dutch}{Requirementsanalyse}{Requirementsanalyse}}%
+\label{ch:requirementsanalyse}
+
+\usepackage{float}
+
+Deze requirementsanalyse beschrijft de functionele en niet-functionele vereisten voor DepGuard AI, een AI-gestuurd dependencydashboard ontwikkeld als bachelorproef ontwerp en de implementatie van het proof-of-concept en bouwt voort op de probleemstelling, literatuurstudie en overleg met de co-promotor. Het platform wordt opgezet als een losstaande webapplicatie naast bestaand tools zoals Dependenabot en release notes samenvat, de kriticiteit van updates beoordeelt en het kernteam ondersteunt bij het prioriteren van dependency-updates.
+
+\section{Stakeholders}
+\label{sec:stakeholders}
+
+De belangrijkste stakeholders van DepGuard AI zijn:
+
+\begin{itemize}
+  \item \textbf{Kernteam voor platform- en dependencybeheer}: primaire gebruikers, verantwoordelijk voor het opvolgen en doorvoeren van dependency-updates en dagelijks gebruik van het dashboard voor overzicht, prioritering en AI samenvattingen.
+  \item \textbf{Developers binnen projecten}: secundaire gebruikers die aan individuele projecten werken, update-adviezen raadplegen en projectleden en dependencies beheren.
+  \item \textbf{Co-promotor / bedrijfsbegeleider}: opdrachtgever vanuit Springbok, die de bruikbaarheid en kwaliteit van de oplossing evalueert en mee de requirements scherpstelt.
+  \item \textbf{Promotor (HoGent)}: academische begeleider die de methodologie, uitvoering en kwaliteit van het eindwerk beoordeelt.
+  \item \textbf{Externe platforms}: GitHub en de npm-registry leveren project- en versiemetadata via hun APIs en vormen zo cruciale bronnen voor het systeem.
+\end{itemize}
+
+\section{Functionele vereisten}
+\label{sec:functionele-vereisten}
+
+De functionele vereisten zijn gegroepeerd per domein en geprioriteerd volgens de MoSCoW-methode (Must Have, Should Have, Won't Have voor dit proof-of-concept).
+
+\subsection{Authenticatie en gebruikersbeheer}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor authenticatie en gebruikersbeheer}
+  \label{tab:auth-gebruikersbeheer}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-01 & Gebruikersregistratie en login via e-mail en wachtwoord (Supabase Auth). & Must Have \\
+    F-02 & Aanmaken van een bedrijfsaccount (multi-tenant). & Must Have \\
+    F-03 & Uitnodigen van teamleden via e-mail met rolkoppeling (Resend API). & Must Have \\
+    F-04 & Rollen per bedrijf: owner, project\_lead, developer, tester (RBAC). & Must Have \\
+    F-05 & Rollen per project: project\_lead, developer (projectniveau RBAC). & Must Have \\
+    F-06 & Uitnodiging accepteren via directe link zonder e-mail (fallbackflow). & Should Have \\
+    F-07 & SSO / OAuth login (bijvoorbeeld GitHub of Google via Supabase OAuth). & Could Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Projectbeheer}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor projectbeheer}
+  \label{tab:projectbeheer}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-08 & Aanmaken, bewerken en verwijderen van projecten (CRUD). & Must Have \\
+    F-09 & Koppelen van een publieke GitHub-repository aan een project (GitHub-integratie). & Must Have \\
+    F-10 & Uploaden van een \texttt{package.json} om dependencies in te laden. & Must Have \\
+    F-11 & Toewijzen van teamleden aan projecten met projectrol. & Must Have \\
+    F-12 & Overzicht van alle projecten per bedrijf met statusindicator. & Must Have \\
+    F-13 & Archiveren of deactiveren van projecten. & Could Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Dependency scanning en versiebeheer}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor dependency scanning en versiebeheer}
+  \label{tab:dependency-scanning}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-14 & Automatisch detecteren van dependencies via GitHub (uitlezen van \texttt{package.json} via de GitHub API). & Must Have \\
+    F-15 & Ophalen van de meest recente versie via de npm-registry (\texttt{npmjs.org}). & Must Have \\
+    F-16 & Vergelijken van huidige versie met meest recente versie (semver-vergelijking). & Must Have \\
+    F-17 & Classificeren van updates als major, minor of patch (semver-classificatie). & Must Have \\
+    F-18 & Opslaan van dependency-informatie (naam, versies, status) in Supabase Postgres. & Must Have \\
+    F-19 & Manueel hertriggeren van een scan door de gebruiker. & Should Have \\
+    F-20 & Automatisch periodiek scannen via een geplande job (cron). & Could Have \\
+    F-21 & Ondersteuning voor meerdere registries (bijv. PyPI, Maven). & Won't Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{AI-analyse en samenvatting}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor AI-analyse en samenvatting}
+  \label{tab:ai-analyse}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-22  & AI-agent analyseert changelogs en release notes van npm en GitHub (Mastra-agent met LLM-backend). & Must Have \\
+    F-23  & Genereren van een begrijpelijke samenvatting per dependency-update. & Must Have \\
+    F-24  & Classificeren van het updatetype: security fix, bugfix, nieuwe feature, breaking change. & Must Have \\
+    F-25  & Aanduiden of een update veilig, risicovol of kritiek lijkt (risico-indicatie). & Must Have \\
+    F-26  & Opslaan van de AI-samenvatting per dependency in het veld \texttt{ai\_summary}. & Must Have \\
+    F-27  & Ondersteuning voor meerdere AI-providers (OpenAI, Google Gemini). & Must Have \\
+    F-28  & Alternatieve AI-workflow via n8n (low-code orkestratie als vergelijking met de Mastra-agent). & Should Have \\
+    F-28b & Alternatieve AI-agent via OpenAI Agent Builder, waarbij een gehoste agent met tools wordt geconfigureerd als tweede alternatief naast Mastra en n8n. & Should Have \\
+    F-29  & Verrijken van AI-input met webcontext via Tavily. & Should Have \\
+    F-30  & Hertriggeren van AI-analyse op verzoek van de gebruiker. & Should Have \\
+    F-31  & Gestructureerde output met migratiestappen en deprecation-warnings. & Could Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Dashboard en visualisatie}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor dashboard en visualisatie}
+  \label{tab:dashboard}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-32 & Overzichtsdashboard met statistieken (verouderde packages, security-issues, recente activiteit). & Must Have \\
+    F-33 & Detailweergave per project met lijst van dependencies en hun status. & Must Have \\
+    F-34 & Weergave van de AI-samenvatting per dependency in het dashboard. & Must Have \\
+    F-35 & Visuele badge of kleurcodering voor major/minor/patch en risico-niveau. & Must Have \\
+    F-36 & Filteren en sorteren van dependencies op status, updatetype en kriticiteit. & Should Have \\
+    F-37 & Exporteren van een dependency-rapport als PDF of CSV. & Could Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Notificaties en communicatie}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor notificaties en communicatie}
+  \label{tab:notificaties}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-38 & E-mailnotificatie bij uitnodiging van een nieuw teamlid (Resend API). & Must Have \\
+    F-39 & E-mailnotificatie bij detectie van een kritieke security-update. & Should Have \\
+    F-40 & In-app notificatie of badge bij nieuwe updates per project. & Could Have \\
+    F-41 & Integratie met Slack of Microsoft Teams voor updateberichten. & Won't Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Regels en beslissingsondersteuning}
+
+\begin{table}[h]
+  \centering
+  \caption{Functionele vereisten voor regels en beslissingsondersteuning}
+  \label{tab:regels-beslissing}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} & \textbf{Prioriteit} \\
+    \midrule
+    F-42 & AI geeft een advies per dependency: ``veilig te updaten'', ``voorzichtigheid geboden'' of ``kritiek''. & Must Have \\
+    F-43 & Mogelijkheid om een dependency handmatig als ``genegeerd'' of ``gedaan'' te markeren. & Should Have \\
+    F-44 & Definiëren van updatebeleid per project (bijvoorbeeld patch-updates automatisch goedkeuren). & Could Have \\
+    F-45 & Automatisch aanmaken van pull requests of GitHub-issues op basis van advies. & Won't Have \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Niet-functionele vereisten}
+\label{sec:niet-functionele-vereisten}
+
+De niet-functionele vereisten zijn afgestemd op de gekozen technische stack (Next.js, Supabase, Mastra, n8n, OpenAI-agent builder en externe LLms) en de context van Springbok.
+
+\subsection{Beveiliging}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- beveiliging}
+  \label{tab:nfr-beveiliging}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-01 & Row Level Security (RLS) in Supabase zorgt ervoor dat gebruikers uitsluitend data zien van het eigen bedrijf en de toegewezen projecten. \\
+    NFR-02 & Authenticatie is verplicht voor alle API-routes en dashboardpagina's via Next.js-middleware. \\
+    NFR-03 & API-sleutels (OpenAI, Google, Resend, GitHub) worden uitsluitend als omgevingsvariabelen opgeslagen en zijn nooit zichtbaar in de frontend. \\
+    NFR-04 & Uitnodigingstokens zijn eenmalig geldig en vervallen na acceptatie. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Prestaties}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- prestaties}
+  \label{tab:nfr-prestaties}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-05 & De end-to-end AI-analyse (van dependency-input tot opgeslagen samenvatting) wordt onder normale omstandigheden binnen ongeveer 30 seconden afgerond. \\
+    NFR-06 & Paginalaadtijden voor het dashboard blijven onder 2 seconden bij een dataset tot ongeveer 200 dependencies per bedrijf. \\
+    NFR-07 & De n8n-workflow en de Mastra-agent worden parallel geëvalueerd op doorlooptijd; de resultaten worden vastgelegd in de evaluatiefase. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Schaalbaarheid}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- schaalbaarheid}
+  \label{tab:nfr-schaalbaarheid}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-08 & De multi-tenant architectuur laat toe om meerdere bedrijven, projecten en gebruikers onafhankelijk van elkaar te beheren. \\
+    NFR-09 & Opslag op Supabase (PostgreSQL) ondersteunt schaalbaarheid via managed infrastructuur en connection pooling. \\
+    NFR-10 & De AI-agentlaag is modulair en kan worden uitgebreid met extra tools, registries of LLM-providers zonder ingrijpende wijzigingen aan de webapplicatie. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Betrouwbaarheid en foutafhandeling}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- betrouwbaarheid en foutafhandeling}
+  \label{tab:nfr-betrouwbaarheid}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-11 & Bij het ontbreken van release notes in GitHub wordt teruggevallen op bestanden zoals \texttt{CHANGELOG.md}, \texttt{CHANGES.md} of \texttt{HISTORY.md}. \\
+    NFR-12 & Als er geen changelog-informatie beschikbaar is, vermeldt de AI-agent dit expliciet in de samenvatting. \\
+    NFR-13 & API-fouten (GitHub, npm, LLM) worden gelogd en weergegeven als leesbare foutmeldingen in de UI. \\
+    NFR-14 & De Mastra-server en de Next.js-applicatie zijn onafhankelijk startbaar; bij uitval van Mastra blijft het dashboard bruikbaar zonder AI-analyse. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Onderhoudbaarheid}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- onderhoudbaarheid}
+  \label{tab:nfr-onderhoudbaarheid}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-15 & De volledige codebase is getypeerd in TypeScript. \\
+    NFR-16 & Logica is opgesplitst per verantwoordelijkheid: AI-agentcode, API-routes en UI-componenten zijn in aparte modules gestructureerd. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Bruikbaarheid}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- bruikbaarheid}
+  \label{tab:nfr-bruikbaarheid}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-17 & Het dashboard is responsive en bruikbaar op verschillende schermformaten. \\
+    NFR-18 & AI-samenvattingen zijn geschreven in begrijpelijke taal, gericht op developers zonder diepgaande AI-kennis. \\
+    NFR-19 & Statusbadges voor updatetype en risiconiveau zijn kleurgecodeerd en direct interpreteerbaar. \\
+    NFR-20 & Het onboardingproces (registratie, bedrijf aanmaken, project koppelen en eerste scan) kan in minder dan vijf minuten worden doorlopen. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Traceerbaarheid en audit}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- traceerbaarheid en audit}
+  \label{tab:nfr-traceerbaarheid}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-21 & Mastra voorziet tracing en logging van agentbeslissingen, tool-calls en modelinteracties, zodat het gedrag van de AI-agent kan worden geanalyseerd. \\
+    NFR-22 & Alle AI-samenvattingen worden met tijdstempel opgeslagen zodat de evolutie van adviezen per dependency navolgbaar is. \\
+    NFR-23 & Gebruikersacties zoals scannen, analyseren en uitnodigen zijn via Supabase auditeerbaar. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Portabiliteit en installatie}
+
+\begin{table}[h]
+  \centering
+  \caption{Niet-functionele vereisten --- portabiliteit en installatie}
+  \label{tab:nfr-portabiliteit}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{ID} & \textbf{Vereiste} \\
+    \midrule
+    NFR-24 & De applicatie kan lokaal worden gestart via \texttt{npm run dev} (Next.js) en \texttt{npm run dev:mastra} (Mastra) na configuratie van de omgevingsvariabelen. \\
+    NFR-25 & De database-opzet is volledig scriptbaar en vereist geen manuele tabelaanmaak. \\
+    NFR-26 & De applicatie is inzetbaar op courante cloudplatformen, bijvoorbeeld Vercel voor Next.js en Supabase Cloud voor de databank. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Samenvattende MoSCoW-prioritering}
+\label{sec:moscow-overzicht}
+
+In totaal worden 26 Must Have-, 9 Should Have-, 8 Could Have- en 4 Won't Have- vereisten onderscheiden. De Must Have-vereisten dekken de kernfunctionaliteit van DepGuard Ai (authenticatie, projectbeheer, scanning, AI-analyse, dashboard en basisadvies), terwijl de overige categorieën extra bruikbaarheid, gemak of toekomstige uitbreidingen beschrijven.

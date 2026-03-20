@@ -1,0 +1,111 @@
+%%=============================================================================
+%% Implementatie
+%%=============================================================================
+
+\chapter{Ontwerp en implementatie van het AI-gestuurde dashboard}
+\label{ch:implementatie}
+
+\section{Architectuur van het systeem}
+% hoog niveau: frontend, backend, database, AI-laag, integratie met GitHub/n8n/Mastra
+
+\section{Implementatie van de Mastra-agent}
+\label{sec:mastra-implementatie}
+% hier komt je vroegere "Implementatie van de Mastra-agent" subsectie,
+% met tekst + listings (minted) van agent- en tool-code
+
+Voor de eerste AI-integratie in het dashboard wordt gebruikgemaakt van Mastra, een Typescript-framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld \texttt{gemini-2.5-flash} of \texttt{gpt-4o-mini}) met een eigen tool \texttt{fetchNpmInfoTool}, die informatie ophaalt uit de npm-registry en bijhorende release notes van Github.
+
+De agent is geconfigureerd met duidelijke instructies en een vast outputformaat, zodat ontwikkelaars snel een gestructureerd overzicht krijgen van nieuwe features, breaking changes, security fixes, deprecations, migratiestappen en een advies of de update veilig is. Onderstaand codefragment toont de definitie van de agent in Mastra:
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=\textwidth,keepaspectratio]{img/dependency-agent.png}
+%   \caption[Mastra dependency-agent]{Mastra-agent voor analyse van dependency-updates}
+%   \label{fig:mastra-agent-config}
+% \end{figure}
+
+De agent maakt gebruik van een custom tool \texttt{fetchNpmInfoTool} om zowel metadata uit de npm-registry als release notes uit Github op te halen. Deze tool accepteert de packagenaam en de versies \texttt{fromVersion} en \texttt{toVersion}, zoekt de repository-URL in de npm-metadata, en probeert vervolgens de relevante GitHub-releases te vinden. Als er geen release is voor de exacte tag, wordt teruggevallen op de laatste releases, zodat de agent steeds over zo volledig mogelijke changelog-informatie beschikt. Het resultaat (beschrijving, homepage, repository en samengestelde \texttt{releaseNotes}) wordt gereialiseerd naar een gestructureerd object waar de agent verder op kan redeneren. De implementatie van de tool is weergegeven in Listing~\ref{lst:mastra-tool}.
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=\textwidth,keepaspectratio]{img/npm-tool.png}
+%   \caption[Mastra-tool voor npm- en GitHub-informatie]{Tool \texttt{fetchNpmInfoTool} voor het ophalen van npm-metadata en GitHub-release notes}
+%   \label{fig:mastra-tool}
+% \end{figure}
+
+\section{Implementatie van de n8n-workflow}
+\label{sec:n8n-implementatie}
+% hier komt je vroegere "Implementatie van de n8n-workflow"
+% met beschrijving van de nodes, webhook, integratie met Next.js/Supabase, figuur van de workflow
+
+\subsubsection{Implementatie van de n8n-workflow}
+\label{sec:n8n-implementatie}
+
+Als tweede AI-integratie wordt een n8n-workflow opgezet die dezelfde kernfunctie vervult als de Mastra-agent, maar dan in een low-code, visueel georkestreerde omgeving. De workflow ontvangt een HTTP-aanvraag vanuit de webapplicatie, verrijkt de aangeleverde dependency-informatie met data uit npm, Github en een webzoekdienst (Tavily)\footnote{Tavily is een API en infrastructuurlaag die AI-agents en LLM-toepassingen real-time toegang geeft tot webzoekopdrachten, webextractie en crawling.\url{https://www.tavily.com/}}, en laat vervolgens een AI-model (Gemini 2.5 flash) een samenvatting genereren van de relevante wijzigingen. Het resultaat wordt teruggestuurd naar de applicatie via de webhook-respons en opgeslagen in de databank.
+
+De workflow bestaat uit een keten van acht nodes (Figuur~\ref{fig:n8n-workflow}):
+
+\begin{itemize}
+    \item \textbf{Node 1: Webhook.} Deze node fungeert als ingangspunt voor de workflow en wordt getriggerd zodra de Next.js-backend een HTTP-aanvraag naar de n8n-URL stuurt. De node is geconfigureerd om te antwoorden via een aparte \emph{Respond to Webhook}-node, zodat alle tussenliggende stappen eerst afgewerkt worden.
+    \item \textbf{Node 2: npm-metadata (Code).} In deze code-node wordt de JSON-body van de inkomende request uitgelezen (\texttt{packageName}, \texttt{fromVersion}, \texttt{toVersion}) en wordt via \texttt{this.helpers.httpRequest } een call gedaan naar \\ \texttt{ https://registry.npmjs.org/\{packageName\}}. De node reconstrueert de repository-URL uit de npm-metadata en geeft een nieuwe JSON-object door met omschrijving, homepage en repository-informatie.
+    \item \textbf{Node 3: Github-node (Code).} Deze node ontvangt de verrijkte npm-data, extraheert \texttt{owner/repo} uit de repository-URL en probeert via de Github API eerst release notes op te halen voor de specifieke tag (\texttt{v\{toVersion\}} of \texttt{toVersion}). Als die niet gevonden wordt, heelt de node de laatste releases op en concateneert de body-teksten tot een \texttt{releaseNotes}-veld. Als er ook geen releases zijn, wordt er nog geprobeerd een \texttt{CHANGELOG.md}, \texttt{CHANGES.md} of \texttt{HISTORY.md} rechtstreeks uit de repository te lezen. De node voegt \texttt{releaseNotes}, \texttt{changelogUrl} en \texttt{source} toe aan de JSON.
+    \item \textbf{Node 4: HTTP Request (Tavily).} Via een HTTP-request-node wordt de Tavily API aangeroeperen om webresultaten op te halen die extra context kunnen geven over de dependency of de update (bijvoorbeeld blogposts of documentatie rond de nieuwe versie).
+    \item \textbf{Node 5: Merge-node (Code).} Deze node voegt de Github-data en Tavily-resultaten samen. De webresultaten worden omgezet naar een tekstveld \texttt{webSnippets} (titel, URL en inhoud per resultaat), dat samen met de eerder verzamelde metadata en release notes wordt doorgegeven aan de AI-node.
+    \item \textbf{Node 6: AI-agent (Gemini).} Een AI-node, geconfigureerd met het model \texttt{gemini-2.5-flash}, ontvangt \texttt{releaseNotes}, \texttt{webSnippets} en versie-informatie als input. Met behulp van een system prompt en user prompt genereert het model een gestructureerde samenvatting van de update (bijvoorbeeld features, breaking changes, security-aspecten en migratieadvies).
+    \item \textbf{Node 7: Code-node (post-processing).} Deze node extraheert de relevante output uit de AI-respons (bijvoorbeeld \texttt{output} of \texttt{summary}) en zet die om naar een eenvoudige JSON-object met één veld \texttt{summary}, zodat de webhook-respons helder en compact blijft.
+    \item \textbf{Node 8: Respond to Webhook.} De laatste node stuurt de \texttt{summary} terug als HTTP-respons naar de oorspronkelijke aanroeper. Aan de kant van de webapplicatie kan deze samenvatting vervolgens rechtstreeks worden opgeslagen in de databank.
+\end{itemize}
+
+De Next.js-backend roept de n8n-workflow aan via een dedicated route (vereenvoudigd weergegeven in Listing~\ref{lst:n8n-route}). Deze route valideert eerst de gebruiker met Supabase, leest de dependencygegevens uit de inkomende request (\texttt{dependencyId}, \texttt{name}, \texttt{currentVersion}, \texttt{latestVersion}) en stuurt die als JSON-payload door naar de n8n-webhook. De samenvatting die n8n terugstuurt wordt daarna opgeslagen in het veld \texttt{ai\_summary} van de desbetreffende dependency.
+
+\begin{listing}[H]
+\begin{minted}{ts}
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { dependencyId, name, currentVersion, latestVersion } =
+    await request.json();
+
+  const n8nRes = await fetch(
+    process.env.N8N_WEBHOOK_URL ?? "http://localhost:5678/webhook-test/analyze-dependency",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        packageName: name,
+        fromVersion: currentVersion,
+        toVersion: latestVersion,
+      }),
+    }
+  );
+
+  const n8nData = await n8nRes.json();
+  const summary = n8nData.summary;
+
+  await supabase
+    .from("dependencies")
+    .update({ ai_summary: summary })
+    .eq("id", dependencyId);
+
+  return NextResponse.json({ summary });
+}
+\end{minted}
+\caption[Aanroep van de n8n-workflow]{Next.js-route die de n8n-workflow aanroept en de samenvatting opslaat}
+\label{lst:n8n-route}
+\end{listing}
+
+Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplementeerd in deze bachelorproef, met de opeenvolgende nodes van inkomnde webhook tot AI-gegenereerde samenvatting.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]{img/n8n-workflow.png}
+  \caption[AI-workflow in n8n]{Overzicht van de n8n-workflow die metadata, release notes, webcontext en AI-samenvatting combineert}
+  \label{fig:n8n-workflow}
+\end{figure}
+
+\section{Integratie met de webapplicatie}
+% hoe dashboard de AI-resultaten ophaalt, toont, beslisregels, enz.
