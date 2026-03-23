@@ -1,0 +1,18 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{webChangelogSearchTool}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createTool}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{  }\PYG{n+nx}{id}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}web\PYGZhy{}changelog\PYGZhy{}search\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{inputSchema}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.object}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{packageName}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{    }\PYG{n+nx}{fromVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{    }\PYG{n+nx}{toVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}),}
+\PYG{+w}{  }\PYG{n+nx}{execute}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{async}\PYG{+w}{ }\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{packageName}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{fromVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{query}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{buildQuery}\PYG{p}{(}\PYG{n+nx}{packageName}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{fromVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{TAVILY\PYGZus{}API\PYGZus{}KEY}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{searchWithTavily}\PYG{p}{(}\PYG{n+nx}{query}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{packageName}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{searchWithDuckDuckGo}\PYG{p}{(}\PYG{n+nx}{query}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// fallback}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{},}
+\PYG{p}{\PYGZcb{});}
+\end{MintedVerbatim}

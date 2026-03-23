@@ -1,0 +1,41 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{Agent}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}@mastra/core/agent\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{google}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}@ai\PYGZhy{}sdk/google\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{fetchNpmInfoTool}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}../tools/npm\PYGZhy{}tool\PYGZdq{}}\PYG{p}{;}
+\PYG{k}{import}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{webChangelogSearchTool}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k+kr}{from}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}../tools/web\PYGZhy{}changelog\PYGZhy{}search\PYGZhy{}tool\PYGZdq{}}\PYG{p}{;}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MODEL}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{google}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}gemini\PYGZhy{}2.5\PYGZhy{}flash\PYGZdq{}}\PYG{p}{);}
+
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{dependencyAgent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nx}{Agent}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{  }\PYG{n+nx}{id}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}DependencyAnalyzer\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Dependency Analyzer\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{instructions}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+sb}{`}
+\PYG{l+s+sb}{    You are a dependency update analyst for software developers.}
+\PYG{l+s+sb}{    Your goal is to give developers CONCRETE, SPECIFIC information about package}
+\PYG{l+s+sb}{    updates so they do NOT have to read the full changelog themselves.}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{} Research Strategy (follow IN ORDER)}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Step 1 — fetch\PYGZhy{}npm\PYGZhy{}info}
+\PYG{l+s+sb}{    Always start by calling the fetch\PYGZhy{}npm\PYGZhy{}info tool with:}
+\PYG{l+s+sb}{    \PYGZhy{} packageName, fromVersion, toVersion}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Step 2 — web\PYGZhy{}changelog\PYGZhy{}search}
+\PYG{l+s+sb}{    Call web\PYGZhy{}changelog\PYGZhy{}search when npm tool returns \PYGZdq{}No release notes found\PYGZdq{}.}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{} Output Format}
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{} [package\PYGZhy{}name] v[from] → v[to] ([major/minor/patch] update)}
+
+\PYG{l+s+sb}{    \PYGZgt{} Source: [tool source or URL]}
+
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} New Features     \PYGZsh{}\PYGZsh{}\PYGZsh{} Breaking Changes}
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Security Fixes   \PYGZsh{}\PYGZsh{}\PYGZsh{} Deprecated}
+\PYG{l+s+sb}{    \PYGZsh{}\PYGZsh{}\PYGZsh{} Migration Steps  \PYGZsh{}\PYGZsh{}\PYGZsh{} Safe to update?}
+\PYG{l+s+sb}{  `}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{model}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{MODEL}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{tools}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{fetchNpmInfoTool}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{webChangelogSearchTool}\PYG{p}{,}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{},}
+\PYG{p}{\PYGZcb{});}
+\end{MintedVerbatim}

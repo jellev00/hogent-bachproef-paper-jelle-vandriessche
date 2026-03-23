@@ -10,35 +10,128 @@
 
 \section{Implementatie van de Mastra-agent}
 \label{sec:mastra-implementatie}
-% hier komt je vroegere "Implementatie van de Mastra-agent" subsectie,
-% met tekst + listings (minted) van agent- en tool-code
 
-Voor de eerste AI-integratie in het dashboard wordt gebruikgemaakt van Mastra, een Typescript-framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld \texttt{gemini-2.5-flash} of \texttt{gpt-4o-mini}) met een eigen tool \texttt{fetchNpmInfoTool}, die informatie ophaalt uit de npm-registry en bijhorende release notes van Github.
+Voor de eerste AI-integratie wordt gebruikgemaakt van Mastra, een TypeScript framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld Google's \texttt{gemini-2.5-flash} of OpenAI's \texttt{gpt-4o-mini}) met twee eigen tools: \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}.
 
-De agent is geconfigureerd met duidelijke instructies en een vast outputformaat, zodat ontwikkelaars snel een gestructureerd overzicht krijgen van nieuwe features, breaking changes, security fixes, deprecations, migratiestappen en een advies of de update veilig is. Onderstaand codefragment toont de definitie van de agent in Mastra:
+De agent volgt een gestructureerde research-strategie: eerst haalt de \texttt{fetchNpmInfoTool} metadata en releasenotes op uit npm en GitHub; als die incompleet zijn, volgt de \texttt{webChangelogSearchTool} met een gerichte webzoekopdracht naar changelogs. Het resultaat wordt gecombineerd en volgens een strikt JSON-formaat geformatteerd, zodat ontwikkelaars direct actionable inzichten krijgen over features, breaking changes, security fixes en migratiestappen. Listing~\ref{lst:mastra-agent-config} toont de definitie van de agent.
 
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=\textwidth,keepaspectratio]{img/dependency-agent.png}
-%   \caption[Mastra dependency-agent]{Mastra-agent voor analyse van dependency-updates}
-%   \label{fig:mastra-agent-config}
-% \end{figure}
+\begin{listing}[H]
+\begin{minted}{typescript}
+import { Agent } from "@mastra/core/agent";
+import { google } from "@ai-sdk/google";
+import { fetchNpmInfoTool } from "../tools/npm-tool";
+import { webChangelogSearchTool } from "../tools/web-changelog-search-tool";
 
-De agent maakt gebruik van een custom tool \texttt{fetchNpmInfoTool} om zowel metadata uit de npm-registry als release notes uit Github op te halen. Deze tool accepteert de packagenaam en de versies \texttt{fromVersion} en \texttt{toVersion}, zoekt de repository-URL in de npm-metadata, en probeert vervolgens de relevante GitHub-releases te vinden. Als er geen release is voor de exacte tag, wordt teruggevallen op de laatste releases, zodat de agent steeds over zo volledig mogelijke changelog-informatie beschikt. Het resultaat (beschrijving, homepage, repository en samengestelde \texttt{releaseNotes}) wordt gereialiseerd naar een gestructureerd object waar de agent verder op kan redeneren. De implementatie van de tool is weergegeven in Listing~\ref{lst:mastra-tool}.
+const MODEL = google("gemini-2.5-flash");
 
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=\textwidth,keepaspectratio]{img/npm-tool.png}
-%   \caption[Mastra-tool voor npm- en GitHub-informatie]{Tool \texttt{fetchNpmInfoTool} voor het ophalen van npm-metadata en GitHub-release notes}
-%   \label{fig:mastra-tool}
-% \end{figure}
+export const dependencyAgent = new Agent({
+  id: "DependencyAnalyzer",
+  name: "Dependency Analyzer",
+  instructions: `
+    You are a dependency update analyst for software developers.
+    Your goal is to give developers CONCRETE, SPECIFIC information about package 
+    updates so they do NOT have to read the full changelog themselves.
+
+    ## Research Strategy (follow IN ORDER)
+
+    ### Step 1 — fetch-npm-info
+    Always start by calling the fetch-npm-info tool with:
+    - packageName, fromVersion, toVersion
+
+    ### Step 2 — web-changelog-search  
+    Call web-changelog-search when npm tool returns "No release notes found".
+
+    ## Output Format
+    ## [package-name] v[from] → v[to] ([major/minor/patch] update)
+
+    > Source: [tool source or URL]
+
+    ### New Features     ### Breaking Changes
+    ### Security Fixes   ### Deprecated
+    ### Migration Steps  ### Safe to update?
+  `,
+  model: MODEL,
+  tools: {
+    fetchNpmInfoTool,
+    webChangelogSearchTool,
+  },
+});
+\end{minted}
+\caption{Mastra \texttt{dependencyAgent}-configuratie met tools en research-strategie}
+\label{lst:mastra-agent-config}
+\end{listing}
+
+De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG-bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback-logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
+
+\begin{listing}[H]
+\begin{minted}[linenos=false]{typescript}
+export const fetchNpmInfoTool = createTool({
+  id: "fetch-npm-info",
+  inputSchema: z.object({
+    packageName: z.string(),
+    fromVersion: z.string(),
+    toVersion: z.string(),
+  }),
+  execute: async ({ packageName, fromVersion, toVersion }) => {
+    // 1. npm registry metadata
+    const npmData = await fetch(`https://registry.npmjs.org/${packageName}`).then(r => r.json());
+
+    // 2. GitHub releases (exact tag, dan recentste, dan CHANGELOG.md)
+    const repoMatch = npmData.repository?.url?.match(/github\.com[/:]([\w.-]+\/[\w.-]+)/);
+    if (repoMatch) {
+      const [tagRes] = await Promise.allSettled([
+        // Try exact tag variants
+        ...["v${toVersion}", toVersion].map(tag => 
+          fetch(`https://api.github.com/repos/${repoMatch[1]}/releases/tags/${tag}`)
+            .then(r => r.json())
+        )
+      ]);
+      // ... fallback naar CHANGELOG parsing
+    }
+
+    return {
+      description: npmData.description || "",
+      homepage: npmData.homepage || "",
+      repository: npmData.repository?.url || "",
+      releaseNotes: releaseNotes || "No release notes found on GitHub.",
+      changelogUrl,
+      source,
+    };
+  },
+});
+\end{minted}
+\caption{\texttt{fetchNpmInfoTool}: npm-metadata en GitHub release notes met CHANGELOG fallback}
+\label{lst:npm-tool}
+\end{listing}
+
+Als de npm-tool geent nuttige release notes vindt, volgt de \texttt{webChangelogSearchTool} (Listing~\ref{lst:web-search-tool}). Deze tool voert een gerichte webzoekopdracht uit naar changelogs via Tavily, Brave Search of DuckDuckGo, met domeinpriorisering voor officiële package-sites (bijvoorbeeld \texttt{nextjs.org}, \texttt{angular.dev}). De tool prioriteert resultaten van officiële documentatie boven aggregators en levert een lijst van relevante titels, URL's en snippets.
+
+\begin{listing}[H]
+\begin{minted}[linenos=false]{typescript}
+export const webChangelogSearchTool = createTool({
+  id: "web-changelog-search",
+  inputSchema: z.object({
+    packageName: z.string(),
+    fromVersion: z.string(),
+    toVersion: z.string(),
+  }),
+  execute: async ({ packageName, fromVersion, toVersion }) => {
+    const query = buildQuery(packageName, fromVersion, toVersion);
+    
+    if (process.env.TAVILY_API_KEY) {
+      return await searchWithTavily(query, packageName, toVersion);
+    }
+    return await searchWithDuckDuckGo(query); // fallback
+  },
+});
+\end{minted}
+\caption{\texttt{webChangelogSearchTool}: webzoekopdracht naar changelogs en migratieguides}
+\label{lst:web-search-tool}
+\end{listing}
+
+De Mastra-agent wordt vanuit de Next.js-backend aangeroepen via een API-route die de dependency-gegevens doorstuurt en de gestructureerde output opslaat in Supabase. Door de combinatie van deze twee tools en de expliciete instructies levert de agent betrouwbare, actionable samenvattingen die ontwikkelaars tijd besparen bij het beoordelen van updates.
 
 \section{Implementatie van de n8n-workflow}
-\label{sec:n8n-implementatie}
-% hier komt je vroegere "Implementatie van de n8n-workflow"
-% met beschrijving van de nodes, webhook, integratie met Next.js/Supabase, figuur van de workflow
-
-\subsubsection{Implementatie van de n8n-workflow}
 \label{sec:n8n-implementatie}
 
 Als tweede AI-integratie wordt een n8n-workflow opgezet die dezelfde kernfunctie vervult als de Mastra-agent, maar dan in een low-code, visueel georkestreerde omgeving. De workflow ontvangt een HTTP-aanvraag vanuit de webapplicatie, verrijkt de aangeleverde dependency-informatie met data uit npm, Github en een webzoekdienst (Tavily)\footnote{Tavily is een API en infrastructuurlaag die AI-agents en LLM-toepassingen real-time toegang geeft tot webzoekopdrachten, webextractie en crawling.\url{https://www.tavily.com/}}, en laat vervolgens een AI-model (Gemini 2.5 flash) een samenvatting genereren van de relevante wijzigingen. Het resultaat wordt teruggestuurd naar de applicatie via de webhook-respons en opgeslagen in de databank.

@@ -12,6 +12,7 @@
 %   explicit approval!), remove the option "dutch," or replace with "english".
 
 \usepackage{lipsum} % For blind text, can be removed after adding actual content
+\usepackage{rotating}
 
 %% Pictures to include in the text can be put in the graphics/ folder
 \graphicspath{{../graphics/}}
@@ -32,7 +33,9 @@
     frame=lines,
     breaklines,
     linenos,
-    tabsize=4
+    tabsize=4,
+    fontsize=\small,
+    breakanywhere
 }
 
 %% Ensure the list of listings is in the table of contents

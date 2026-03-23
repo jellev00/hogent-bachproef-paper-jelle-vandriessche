@@ -1,0 +1,36 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{fetchNpmInfoTool}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createTool}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{  }\PYG{n+nx}{id}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}fetch\PYGZhy{}npm\PYGZhy{}info\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nx}{inputSchema}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.object}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{packageName}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{    }\PYG{n+nx}{fromVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{    }\PYG{n+nx}{toVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{z.string}\PYG{p}{(),}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}),}
+\PYG{+w}{  }\PYG{n+nx}{execute}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{async}\PYG{+w}{ }\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{packageName}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{fromVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{c+c1}{// 1. npm registry metadata}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{npmData}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`https://registry.npmjs.org/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{packageName}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{).}\PYG{n+nx}{then}\PYG{p}{(}\PYG{n+nx}{r}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{r}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{());}
+
+\PYG{+w}{    }\PYG{c+c1}{// 2. GitHub releases (exact tag, dan recentste, dan CHANGELOG.md)}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{repoMatch}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{npmData}\PYG{p}{.}\PYG{n+nx}{repository}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{url}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{match}\PYG{p}{(}\PYG{l+s+sr}{/github\PYGZbs{}.com[/:]([\PYGZbs{}w.\PYGZhy{}]+\PYGZbs{}/[\PYGZbs{}w.\PYGZhy{}]+)/}\PYG{p}{);}
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{repoMatch}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{[}\PYG{n+nx}{tagRes}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nb}{Promise}\PYG{p}{.}\PYG{n+nx}{allSettled}\PYG{p}{([}
+\PYG{+w}{        }\PYG{c+c1}{// Try exact tag variants}
+\PYG{+w}{        }\PYG{p}{...[}\PYG{l+s+s2}{\PYGZdq{}v\PYGZdl{}\PYGZob{}toVersion\PYGZcb{}\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{p}{].}\PYG{n+nx}{map}\PYG{p}{(}\PYG{n+nx}{tag}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}
+\PYG{+w}{          }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`https://api.github.com/repos/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{repoMatch}\PYG{p}{[}\PYG{l+m+mf}{1}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{/releases/tags/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{tag}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{)}
+\PYG{+w}{            }\PYG{p}{.}\PYG{n+nx}{then}\PYG{p}{(}\PYG{n+nx}{r}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{r}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{())}
+\PYG{+w}{        }\PYG{p}{)}
+\PYG{+w}{      }\PYG{p}{]);}
+\PYG{+w}{      }\PYG{c+c1}{// ... fallback naar CHANGELOG parsing}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n+nx}{description}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{npmData.description}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{      }\PYG{n+nx}{homepage}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{npmData.homepage}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{      }\PYG{n+nx}{repository}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{npmData.repository?.url}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{      }\PYG{n+nx}{releaseNotes}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{releaseNotes}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}No release notes found on GitHub.\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{      }\PYG{n+nx}{changelogUrl}\PYG{p}{,}
+\PYG{+w}{      }\PYG{n+nx}{source}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{};}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{},}
+\PYG{p}{\PYGZcb{});}
+\end{MintedVerbatim}
