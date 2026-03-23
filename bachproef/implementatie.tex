@@ -6,7 +6,31 @@
 \label{ch:implementatie}
 
 \section{Architectuur van het systeem}
-% hoog niveau: frontend, backend, database, AI-laag, integratie met GitHub/n8n/Mastra
+% hoog niveau: frontend, backend, database, AI-laag, integratie met GitHub/n8n/Mastra/OpenAI-Agent-Builder
+
+Het proof-of-concept voor DepGuard AI is opgezet als een moderne webarchitectuur met een duidelijke scheiding tussen frontend, backend, databank en AI-laag. De oplossing wordt gehost als een Next.js-applicatie bovenop Node.js, met Supabase als beheerde PostgreSQL-databank en Mastra, n8n en de OpenAI-agent-builder als afzonderlijke AI- en workflowcomponenten. Figuur~\ref{fig:arch-overview} toont de globale systeemarchitectuur.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]{img/architectuur-overzicht.png}
+  \caption[Architectuuroverzicht DepGuard AI]{Globale architectuur van DepGuard AI met frontend, backend, databank en AI-laag}
+  \label{fig:arch-overview}
+\end{figure}
+
+De frontend is een Next.js-Reactdashboard dat authenticatie, projectbeheer en visualisatie van dependency- en AI-informatie verzorgt. Gebruikers kunnen bedrijven en projecten aanmaken, GitHub-repositories koppelen, dependency-scans opstarten en de door de AI gegenereerde samenvattingen en adviezen raadplegen. Voor de UI wordt gebruikgemaakt van Tailwind CSS en shadcn/ui, zodat componenten consistent en herbruikbaar zijn.
+
+De backend bestaat uit een set Next.js API-routes die fungeren als orkestratielaag tussen de frontend, Supabase, externe APIs (GitHub, npm, Tavily) en de verschillende AI-componenten. Bij een scan leest de backend eerst de dependencyinformatie van een project (bijvoorbeeld uit \texttt{package.json} in GitHub), slaat de resultaten op in Supabase en roept vervolgens één van de AI-varianten aan: de mastra-agent, de n8n-workflow of de OpenAI-agent. De teruggestuurde samenvatting wordt gekoppeld aan de dependency en via het dashboard zichtbaar gemaakt voor de gebruiker.
+
+Supabase verzorgt de persistente opslag van bedrijven, bedrijfleden, gebruikers, uitnodigingen, projecten, projectleden en dependencies, met Row Level Security om multi-tenant isolatie te garanderen. Het conceptuele datamodel omvat onder meer de entiteiten \texttt{companies}, \texttt{company\_members}, \texttt{profiles}, \texttt{invitations}, \texttt{projects}, \texttt{project\_members} en \texttt{dependencies}. Figuur~\ref{fig:erd} toont het ERD met de belangrijkste relaties tussen deze entiteiten.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]{img/erd-depguard.png}
+  \caption[Conceptueel datamodel DepGuard AI]{Conceptueel ERD met bedrijven, projecten, leden en dependencies}
+  \label{fig:erd}
+\end{figure}
+
+De AI-laag bestaat uit drie parallelle paden die in aparte secties verder worden uitgewerkt. De Mastra-agent draait als TypeScript-service naast de Next.js-app en wordt aangeroepen via een interne API-route. De n8n-workflow draait in een eigen runtime en wordt aangesproken via een webhook-URL. De OpenAI-agent-builder wordt gebruikt om een gehoste agent te configureren met vergelijkbare tools en prompt. In alle gevallen verloopt de dataflow volgens hetzelfde patroon: dependencygegevens en eventueel changelog- en webcontext worden doorgestuurd naar de gekozen AI-component, de gestructureerde samenvatting komt terug naar de backend en wordt opgeslagen in Supabase. Hierdoor kan het dashboard de resultaten van de verschillende AI-aanpakken op een uniforme manier presenteren en vergelijken.
 
 \section{Implementatie van de Mastra-agent}
 \label{sec:mastra-implementatie}
@@ -199,6 +223,9 @@ Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplement
   \caption[AI-workflow in n8n]{Overzicht van de n8n-workflow die metadata, release notes, webcontext en AI-samenvatting combineert}
   \label{fig:n8n-workflow}
 \end{figure}
+
+\section{Implementatie van de OpenAI-agent-builder}
+\label{sec:n8n-implementatie}
 
 \section{Integratie met de webapplicatie}
 % hoe dashboard de AI-resultaten ophaalt, toont, beslisregels, enz.
