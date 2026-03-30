@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{SYSTEM\PYGZus{}PROMPT}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`}
+\PYG{l+s+sb}{You are a dependency update analyst for software developers.}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{} Research Strategy (follow IN ORDER)}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Step 1 — fetch\PYGZhy{}npm\PYGZhy{}info}
+\PYG{l+s+sb}{Always start by calling the fetch\PYGZhy{}npm\PYGZhy{}info tool...}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Step 2 — web\PYGZhy{}changelog\PYGZhy{}search}
+\PYG{l+s+sb}{Call when npm returns \PYGZdq{}No release notes found\PYGZdq{}...}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{} Output Format}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{} [package] v[from] → v[to] ([major/minor/patch])}
+\PYG{l+s+sb}{\PYGZgt{} Source: [URL]}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} ✅ New Features \PYGZsh{}\PYGZsh{}\PYGZsh{} ⚠️ Breaking Changes}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} 🔒 Security Fixes \PYGZsh{}\PYGZsh{}\PYGZsh{} 🗑️ Deprecated}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} 📋 Migration Steps \PYGZsh{}\PYGZsh{}\PYGZsh{} 🟢 Safe to update?}
+\PYG{l+s+sb}{`}\PYG{p}{;}
+
+\PYG{k}{export}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{analyzeDependency}\PYG{p}{(\PYGZob{}}\PYG{n+nx}{name}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{currentVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{latestVersion}\PYG{p}{\PYGZcb{})}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{messages}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{[\PYGZob{}}\PYG{n+nx}{role}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}system\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{content}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{SYSTEM\PYGZus{}PROMPT}\PYG{p}{\PYGZcb{},}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{role}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}user\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{...\PYGZcb{}];}
+\PYG{+w}{  }\PYG{c+c1}{// Agentic loop \PYGZhy{} max 10 turns}
+\PYG{+w}{  }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{turn}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n+nx}{turn}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mf}{10}\PYG{p}{;}\PYG{+w}{ }\PYG{n+nx}{turn}\PYG{o}{++}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{response}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{client}\PYG{p}{.}\PYG{n+nx}{chat}\PYG{p}{.}\PYG{n+nx}{completions}\PYG{p}{.}\PYG{n+nx}{create}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{      }\PYG{n+nx}{model}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}gpt\PYGZhy{}4o\PYGZhy{}mini\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{messages}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{tools}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{tool\PYGZus{}choice}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}auto\PYGZdq{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+\PYG{+w}{    }\PYG{c+c1}{// Handle tool calls: execute \PYGZam{} feed back results}
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{choice}\PYG{p}{.}\PYG{n+nx}{finish\PYGZus{}reason}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}stop\PYGZdq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{assistantMessage}\PYG{p}{.}\PYG{n+nx}{content}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

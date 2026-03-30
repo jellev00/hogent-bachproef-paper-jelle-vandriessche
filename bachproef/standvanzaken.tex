@@ -125,6 +125,18 @@ In het kader van deze bachelorproef wordt n8n gebruikt om een tweede AI-integrat
 
 Voor dependencybeheer is vooral de integratie tussen n8n en GitHub relevant: n8n biedt kant-en-klare nodes om repositorygegevens op te halen, issues en pull requests te beheren en notificaties te versturen bij nieuwe releases of commits. Daardoor kan een workflow bijvoorbeeld automatisch getriggerd worden wanneer een nieuwe release in een GitHub-repository verschijnt, waarna de relevante metadata en changelog-informatie naar een taalmodel of agent gestuurd wordt ter analyse. In deze bachelorproef wordt deze mogelijkheid benut om een alternatieve, low-code orkestratie van dependency-updates uit te werken, in contrast met de meer code-gedreven integratie met Mastra.
 
+\subsubsection{OpenAI Agent Builder: API-gestuurde agentconfiguratie}
+
+Naast framework gebaseerde benaderingen zoals Mastra en low-code tools zoals n8n biedt OpenAI via zijn API een declaratieve manier om AI-agents te configureren met tool calling en agentic loops \textcite{OpenAIDocs2026,Meshworld2026}. De OpenAI Assistants API (ook wel Agent Builder genoemd) laat toe om agents te definiëren met een taalmodel, gedetailleerde instructies en custom tools, die door het model autonoom worden aangeroepen tijdens een conversatie \textcite{OpenAIDocs2026}. Dit maakt het mogelijk om complexe research taken, zoals het sequentieel ophalen van npm metadata en web changelogs, te automatiseren zonder een volledig framework op te zetten \textcite{Meshworld2026}.
+
+In de OpenAI aanpak wordt een agent opgezet met een system prompt die een expliciete research strategie definieert: eerst de \texttt{fetch-npm-info} tool aanroepen, en bij onvolledige release notes overschakelen naar \texttt{web-changelog-search}. Tools worden als JSON schema's gedeclareerd, uitgevoerd in een loop tot het model een finale output genereerrt in een gestructureerd formaat met secties zoals new features, breaking changes en migratiestappen \textcite{EastonDev2026}. Deze tool calling mechanismen bootsen agentic gedrag na, waarbij het model beslist wanneer tools nodig zijn en resultaten integreert in de analyse \textcite{OpenAIAgentsNPM2025}.
+
+De OpenAI API integreert naadloos met TypeScript en Node.js via de officiële SDK, met ondersteuning voor modellen zoals gpt-4o-mini. Belangrijke features zijn de agent loop (tot 10 turns om infinite loops te voorkomen), gestructureerde ouputs en fallback logica in tools, wat robuustheid biedt bij variërende data uit npm, GitHub of web searches \textcite{PacktPub2025}. Observability verloopt via loggin van tool calls en messages, analoog aan Mastra's tracing.
+
+In deze bachelorproef wordt de OpenAI Agent Builder gebruikt voor een derde AI integratie: een custom agent die dependency updates analyseert met dezelfde tools als Mastra. Deze API gedreven configuratie contrasteert met Mastra's framework overhead en n8n's visuele editor, en biedt maximale controle over de toolflow in pure TypeScript. Door de agent direct in de Next.js backend te embedden, kan de webapplicatie dependency samenvattingen uniform ophalen en vergelijken over de drie implementaties heen \textcite{OpenAIAgentsCore2025}.
+
+Deze benadering sluit aan bij het Node.js ecosysteem van de thesis en demonstreert hoe declaratieve tool calling een lichtgewicht alternatief vormt voor colledige agent-frameworks, ideaal voor integratie in bestaande webapplicaties met externe APIs zoals GitHub en npm registries.
+
 \section{Onderzoeksniche: AI-ondersteund dependencybeheer}
 \label{sec:onderzoeksniche}
 

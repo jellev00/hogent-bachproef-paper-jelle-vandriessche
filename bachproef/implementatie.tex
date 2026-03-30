@@ -85,7 +85,7 @@ export const dependencyAgent = new Agent({
 \label{lst:mastra-agent-config}
 \end{listing}
 
-De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG-bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback-logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
+De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -225,7 +225,81 @@ Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplement
 \end{figure}
 
 \section{Implementatie van de OpenAI-agent-builder}
-\label{sec:n8n-implementatie}
+\label{sec:openai-agent-builder-implementatie}
+
+Als derde AI-integratie wordt een eigen OpenAI-agent geïmplementeerd met de OpenAI API, die dependency updates analyseert via een expliciete tool loop. De agent gebruikt hetzelfde model als Mastra (gpt-4o-mini), gecombineerd met de tools \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}, en volgt een gelijkaardige research-strategie: eerst npm/GitHub metadata, dan webzoekopdrachten bij onvolledige info. Listing~\ref{lst:openai-agent-config} toont de kernconfiguratie met system prompt en agent-loop.
+
+\begin{listing}[H]
+\begin{minted}{typescript}
+const SYSTEM_PROMPT = `
+You are a dependency update analyst for software developers.
+## Research Strategy (follow IN ORDER)
+### Step 1 — fetch-npm-info
+Always start by calling the fetch-npm-info tool...
+### Step 2 — web-changelog-search
+Call when npm returns "No release notes found"...
+## Output Format
+## [package] v[from] → v[to] ([major/minor/patch])
+> Source: [URL]
+### ✅ New Features ### ⚠️ Breaking Changes
+### 🔒 Security Fixes ### 🗑️ Deprecated
+### 📋 Migration Steps ### 🟢 Safe to update?
+`;
+
+export async function analyzeDependency({name, currentVersion, latestVersion}) {
+  const messages = [{role: "system", content: SYSTEM_PROMPT}, {role: "user", ...}];
+  // Agentic loop - max 10 turns
+  for (let turn = 0; turn < 10; turn++) {
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini", messages, tools, tool_choice: "auto"
+    });
+    // Handle tool calls: execute & feed back results
+    if (choice.finish_reason === "stop") return assistantMessage.content;
+  }
+}
+\end{minted}
+\caption{OpenAI \\texttt{dependencyAgent} met system prompt en tool-loop}
+\label{lst:openai-agent-config}
+\end{listing}
+
+De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:openai-npm-tool}) haalt npm-metadata op, zoekt GitHub releases (exact tag of recentste) en valt terug op CHANGELOG parsing met fallback logica voor robuustheid.
+
+\begin{listing}[H]
+\begin{minted}[linenos=false]{typescript}
+export async function executeFetchNpmInfo(args) {
+  const npmData = await fetch(`https://registry.npmjs.org/${args.packageName}`).then(r => r.json());
+  const repoMatch = npmData.repository?.url?.match(/github\.com[/:]([\w.-]+\/[\w.-]+)/);
+  if (repoMatch) {
+    // Exact tag, recent releases, CHANGELOG.md fallback
+    for (const tag of [`v${args.toVersion}`, args.toVersion]) {
+      const res = await fetch(`https://api.github.com/repos/${repoMatch[1]}/releases/tags/${tag}`);
+      if (res.ok && data.body) { /* use release notes */ }
+    }
+  }
+  return { description: npmData.description || "", releaseNotes: releaseNotes || "No release notes found" };
+}
+\end{minted}
+\caption{\\texttt{fetchNpmInfoTool}: npm-metadata en GitHub-releases met CHANGELOG-fallback}
+\label{lst:openai-npm-tool}
+\end{listing}
+
+Als npm onvoldoende releasenotes vindt, activeert de \texttt{webChangelogSearchTool} (Listing~\ref{lst:openai-web-tool}) een webzoekopdracht via Tavily, Brave of DuckDuckGo, met domeinprioriteit voor officiële sites zoals \texttt{nextjs.org} of \texttt{angular.dev}
+
+\begin{listing}[H]
+\begin{minted}[linenos=false]{typescript}
+export async function executeWebChangelogSearch(args) {
+  const query = buildQuery(args.packageName, args.fromVersion, args.toVersion);
+  if (process.env.TAVILY_API_KEY) {
+    return await searchWithTavily(query, args.packageName);
+  }
+  return await searchWithDuckDuckGo(query); // fallback
+}
+\end{minted}
+\caption{\\texttt{webChangelogSearchTool}: webzoekopdrachten naar changelogs}
+\label{lst:openai-web-tool}
+\end{listing}
+
+De Next.js backend roept de OpenAI agent aan via een API route, analoog aan Mastra en n8n: dependencygegevens worden doorgestuurd, de gestructureerde samenvatting opgeslagen in Supabase, en via het dashboard gepresenteerd. Deze custom implementatie biedt maximale controle over de toolflow en outputformaat, ideaal voor vergelijking met de framework-gebaseerde Mastra en n8n aanpakken.
 
 \section{Integratie met de webapplicatie}
 % hoe dashboard de AI-resultaten ophaalt, toont, beslisregels, enz.

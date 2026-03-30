@@ -1,0 +1,14 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{executeFetchNpmInfo}\PYG{p}{(}\PYG{n+nx}{args}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{npmData}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`https://registry.npmjs.org/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{args}\PYG{p}{.}\PYG{n+nx}{packageName}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{).}\PYG{n+nx}{then}\PYG{p}{(}\PYG{n+nx}{r}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{r}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{());}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{repoMatch}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{npmData}\PYG{p}{.}\PYG{n+nx}{repository}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{url}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{match}\PYG{p}{(}\PYG{l+s+sr}{/github\PYGZbs{}.com[/:]([\PYGZbs{}w.\PYGZhy{}]+\PYGZbs{}/[\PYGZbs{}w.\PYGZhy{}]+)/}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{repoMatch}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{c+c1}{// Exact tag, recent releases, CHANGELOG.md fallback}
+\PYG{+w}{    }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{tag}\PYG{+w}{ }\PYG{k}{of}\PYG{+w}{ }\PYG{p}{[}\PYG{l+s+sb}{`v}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{args}\PYG{p}{.}\PYG{n+nx}{toVersion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{args}\PYG{p}{.}\PYG{n+nx}{toVersion}\PYG{p}{])}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{res}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`https://api.github.com/repos/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{repoMatch}\PYG{p}{[}\PYG{l+m+mf}{1}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{/releases/tags/}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{tag}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{res}\PYG{p}{.}\PYG{n+nx}{ok}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n+nx}{data}\PYG{p}{.}\PYG{n+nx}{body}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+cm}{/* use release notes */}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{  }\PYG{k}{return}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{description}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{npmData.description}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{releaseNotes}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{releaseNotes}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}No release notes found\PYGZdq{}}\PYG{+w}{ }\PYG{p}{\PYGZcb{};}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}
