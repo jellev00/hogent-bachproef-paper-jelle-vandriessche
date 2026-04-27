@@ -1,0 +1,20 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{POST}\PYG{p}{(}\PYG{n+nx}{request}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{Request}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{supabase}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{createClient}\PYG{p}{();}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{data}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{user}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{supabase}\PYG{p}{.}\PYG{n+nx}{auth}\PYG{p}{.}\PYG{n+nx}{getUser}\PYG{p}{();}
+\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{user}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{NextResponse}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{error}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Unauthorized\PYGZdq{}}\PYG{+w}{ }\PYG{p}{\PYGZcb{},}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{status}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{401}\PYG{+w}{ }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{dependencyId}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{name}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{currentVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{latestVersion}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{request}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{();}
+
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{n8nRes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{N8N\PYGZus{}WEBHOOK\PYGZus{}URL}\PYG{o}{!}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{method}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}POST\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{headers}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Content\PYGZhy{}Type\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}application/json\PYGZdq{}}\PYG{+w}{ }\PYG{p}{\PYGZcb{},}
+\PYG{+w}{    }\PYG{n+nx}{body}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{JSON.stringify}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{packageName}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{name}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{fromVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{currentVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toVersion}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{latestVersion}\PYG{+w}{ }\PYG{p}{\PYGZcb{}),}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{summary}\PYG{+w}{ }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{n8nRes}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{();}
+\PYG{+w}{  }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{supabase}\PYG{p}{.}\PYG{k+kr}{from}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}dependencies\PYGZdq{}}\PYG{p}{).}\PYG{n+nx}{update}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{ai\PYGZus{}summary}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{summary}\PYG{+w}{ }\PYG{p}{\PYGZcb{}).}\PYG{n+nx}{eq}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}id\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{dependencyId}\PYG{p}{);}
+
+\PYG{+w}{  }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{NextResponse}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{summary}\PYG{+w}{ }\PYG{p}{\PYGZcb{});}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}
