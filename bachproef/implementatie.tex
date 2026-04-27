@@ -5,6 +5,8 @@
 \chapter{Ontwerp en implementatie van het AI-gestuurde dashboard}
 \label{ch:implementatie}
 
+In dit hoofdstuk wordt beschreven hoe de concepten uit de literatuur en de requirements-analyse vertaald werden naar een werkende proof-of-concept. Eerst wordt de globale architectuur van het systeem toegelicht, gevolgd door de drie uitgewerkte AI-integraties en tot slot de koppeling met de webapplicatie. Op die manier vormt dit hoofdstuk de brug tussen het theoretische kader en de concrete realisatie van DepGuard AI.
+
 \section{Architectuur van het systeem}
 % hoog niveau: frontend, backend, database, AI-laag, integratie met GitHub/n8n/Mastra/OpenAI-Agent-Builder
 
@@ -21,7 +23,9 @@ De frontend is een Next.js-Reactdashboard dat authenticatie, projectbeheer en vi
 
 De backend bestaat uit een set Next.js API-routes die fungeren als orkestratielaag tussen de frontend, Supabase, externe APIs (GitHub, npm, Tavily) en de verschillende AI-componenten. Bij een scan leest de backend eerst de dependencyinformatie van een project (bijvoorbeeld uit \texttt{package.json} in GitHub), slaat de resultaten op in Supabase en roept vervolgens één van de AI-varianten aan: de mastra-agent, de n8n-workflow of de OpenAI-agent. De teruggestuurde samenvatting wordt gekoppeld aan de dependency en via het dashboard zichtbaar gemaakt voor de gebruiker.
 
-Supabase verzorgt de persistente opslag van bedrijven, bedrijfleden, gebruikers, uitnodigingen, projecten, projectleden en dependencies, met Row Level Security om multi-tenant isolatie te garanderen. Het conceptuele datamodel omvat onder meer de entiteiten \texttt{companies}, \texttt{company\_members}, \texttt{profiles}, \texttt{invitations}, \texttt{projects}, \texttt{project\_members} en \texttt{dependencies}. Figuur~\ref{fig:erd} toont het ERD met de belangrijkste relaties tussen deze entiteiten.
+Supabase verzorgt de presistente opslag van bedrijven, bedrijfleden, gebruikers, uitnodigingen, projecten, projectleden en dependencies, met Row Level Security om multi-tenant isolatie te garanderen. Het conceptuele datamodel is opgebouwd rond een centrale bedrijfsstructuur, waarvan gebruikers, projecten en dependencygegevens gekoppeld worden. De tabel \texttt{companies} bevat de kerngegevens van een organisatie en verwijst naar de eigenaar via \texttt{owner_id}. Via \texttt{company_members} worden bijkomende gebruikers aan een bedrijf gekoppeld, inclusief hun rol en het moment waarop ze werden uitgenodigd of geaccepteerd. De tabel \texttt{profiles} bewaart de profielgegevens van gebruikers en kan optioneel gekoppeld zijn aan een bedrijf.
+
+De projectstructuur vertrekt vanuit \texttt{projects}, waar elk project behoort tot een bedrijf en een aanmaker heeft. Via \texttt{project_members} worden gebruikers aan projecten gekoppeld met een specifieke rol, zodat toegang en verantwoordelijkheden per project kunnen verschillen. De tabel \texttt{dependencies} bevat vervolgens de concrete dependencies per project, samen met versies, statusinformatie, AI-samenvattingen en metadata zoals de changelog-URL en het tijdstip van de laatste controle. Ten slotte laat \texttt{invitations} toe om nieuwe gebruikers uit te nodigen voor een bedrijf via een tokengebaseerde uitnodiging. Figuur~\ref{fig:erd} toont hoe deze entiteiten samen het datamodel vormen waarop het dashboard steunt.
 
 \begin{figure}[H]
   \centering
@@ -37,55 +41,29 @@ De AI-laag bestaat uit drie parallelle paden die in aparte secties verder worden
 
 Voor de eerste AI-integratie wordt gebruikgemaakt van Mastra, een TypeScript framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld Google's \texttt{gemini-2.5-flash} of OpenAI's \texttt{gpt-4o-mini}) met twee eigen tools: \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}.
 
-De agent volgt een gestructureerde research-strategie: eerst haalt de \texttt{fetchNpmInfoTool} metadata en releasenotes op uit npm en GitHub; als die incompleet zijn, volgt de \texttt{webChangelogSearchTool} met een gerichte webzoekopdracht naar changelogs. Het resultaat wordt gecombineerd en volgens een strikt JSON-formaat geformatteerd, zodat ontwikkelaars direct actionable inzichten krijgen over features, breaking changes, security fixes en migratiestappen. Listing~\ref{lst:mastra-agent-config} toont de definitie van de agent.
+De agent volgt een gestructureerde research-strategie: eerst haalt de \texttt{fetchNpmInfoTool} metadata en releasenotes op uit npm en GitHub; als die incompleet zijn, volgt de \texttt{webChangelogSearchTool} met een gerichte webzoekopdracht naar changelogs. Het resultaat wordt gecombineerd en volgens een strikt JSON-formaat geformatteerd, zodat ontwikkelaars direct actionable inzichten krijgen over features, breaking changes, security fixes en migratiestappen. Codefragment~\ref{lst:mastra-agent-config} toont de definitie van de agent.
 
 \begin{listing}[H]
 \begin{minted}{typescript}
 import { Agent } from "@mastra/core/agent";
 import { google } from "@ai-sdk/google";
-import { fetchNpmInfoTool } from "../tools/npm-tool";
-import { webChangelogSearchTool } from "../tools/web-changelog-search-tool";
-
-const MODEL = google("gemini-2.5-flash");
 
 export const dependencyAgent = new Agent({
   id: "DependencyAnalyzer",
   name: "Dependency Analyzer",
-  instructions: `
-    You are a dependency update analyst for software developers.
-    Your goal is to give developers CONCRETE, SPECIFIC information about package 
-    updates so they do NOT have to read the full changelog themselves.
-
-    ## Research Strategy (follow IN ORDER)
-
-    ### Step 1 — fetch-npm-info
-    Always start by calling the fetch-npm-info tool with:
-    - packageName, fromVersion, toVersion
-
-    ### Step 2 — web-changelog-search  
-    Call web-changelog-search when npm tool returns "No release notes found".
-
-    ## Output Format
-    ## [package-name] v[from] → v[to] ([major/minor/patch] update)
-
-    > Source: [tool source or URL]
-
-    ### New Features     ### Breaking Changes
-    ### Security Fixes   ### Deprecated
-    ### Migration Steps  ### Safe to update?
-  `,
-  model: MODEL,
+  instructions: `...`,
+  model: google("gemini-2.5-flash"),
   tools: {
     fetchNpmInfoTool,
     webChangelogSearchTool,
   },
 });
 \end{minted}
-\caption{Mastra \texttt{dependencyAgent}-configuratie met tools en research-strategie}
+\caption{Codefragment: \texttt{dependencyAgent}-configuratie met tools en research-strategie}
 \label{lst:mastra-agent-config}
 \end{listing}
 
-De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
+De \texttt{fetchNpmInfoTool} (Codefragment~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -97,38 +75,28 @@ export const fetchNpmInfoTool = createTool({
     toVersion: z.string(),
   }),
   execute: async ({ packageName, fromVersion, toVersion }) => {
-    // 1. npm registry metadata
     const npmData = await fetch(`https://registry.npmjs.org/${packageName}`).then(r => r.json());
-
-    // 2. GitHub releases (exact tag, dan recentste, dan CHANGELOG.md)
     const repoMatch = npmData.repository?.url?.match(/github\.com[/:]([\w.-]+\/[\w.-]+)/);
+
+    // exact tag, recente releases of CHANGELOG fallback
     if (repoMatch) {
-      const [tagRes] = await Promise.allSettled([
-        // Try exact tag variants
-        ...["v${toVersion}", toVersion].map(tag => 
-          fetch(`https://api.github.com/repos/${repoMatch[1]}/releases/tags/${tag}`)
-            .then(r => r.json())
-        )
-      ]);
-      // ... fallback naar CHANGELOG parsing
+      // ...
     }
 
     return {
       description: npmData.description || "",
-      homepage: npmData.homepage || "",
       repository: npmData.repository?.url || "",
       releaseNotes: releaseNotes || "No release notes found on GitHub.",
-      changelogUrl,
       source,
     };
   },
 });
 \end{minted}
-\caption{\texttt{fetchNpmInfoTool}: npm-metadata en GitHub release notes met CHANGELOG fallback}
+\caption{Codefragment: \texttt{fetchNpmInfoTool} met npm-metadata en fallbacklogica}
 \label{lst:npm-tool}
 \end{listing}
 
-Als de npm-tool geent nuttige release notes vindt, volgt de \texttt{webChangelogSearchTool} (Listing~\ref{lst:web-search-tool}). Deze tool voert een gerichte webzoekopdracht uit naar changelogs via Tavily, Brave Search of DuckDuckGo, met domeinpriorisering voor officiële package-sites (bijvoorbeeld \texttt{nextjs.org}, \texttt{angular.dev}). De tool prioriteert resultaten van officiële documentatie boven aggregators en levert een lijst van relevante titels, URL's en snippets.
+Als de npm-tool geent nuttige release notes vindt, volgt de \texttt{webChangelogSearchTool} (Codefragment~\ref{lst:web-search-tool}). Deze tool voert een gerichte webzoekopdracht uit naar changelogs via Tavily, Brave Search of DuckDuckGo, met domeinpriorisering voor officiële package-sites (bijvoorbeeld \texttt{nextjs.org}, \texttt{angular.dev}). De tool prioriteert resultaten van officiële documentatie boven aggregators en levert een lijst van relevante titels, URL's en snippets.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -141,15 +109,13 @@ export const webChangelogSearchTool = createTool({
   }),
   execute: async ({ packageName, fromVersion, toVersion }) => {
     const query = buildQuery(packageName, fromVersion, toVersion);
-    
-    if (process.env.TAVILY_API_KEY) {
-      return await searchWithTavily(query, packageName, toVersion);
-    }
-    return await searchWithDuckDuckGo(query); // fallback
+    return process.env.TAVILY_API_KEY
+      ? await searchWithTavily(query, packageName, toVersion)
+      : await searchWithDuckDuckGo(query);
   },
 });
 \end{minted}
-\caption{\texttt{webChangelogSearchTool}: webzoekopdracht naar changelogs en migratieguides}
+\caption{Codefragment: \texttt{webChangelogSearchTool} voor webzoekopdrachten naar changelogs}
 \label{lst:web-search-tool}
 \end{listing}
 
@@ -165,7 +131,7 @@ De workflow bestaat uit een keten van acht nodes (Figuur~\ref{fig:n8n-workflow})
 \begin{itemize}
     \item \textbf{Node 1: Webhook.} Deze node fungeert als ingangspunt voor de workflow en wordt getriggerd zodra de Next.js-backend een HTTP-aanvraag naar de n8n-URL stuurt. De node is geconfigureerd om te antwoorden via een aparte \emph{Respond to Webhook}-node, zodat alle tussenliggende stappen eerst afgewerkt worden.
     \item \textbf{Node 2: npm-metadata (Code).} In deze code-node wordt de JSON-body van de inkomende request uitgelezen (\texttt{packageName}, \texttt{fromVersion}, \texttt{toVersion}) en wordt via \texttt{this.helpers.httpRequest } een call gedaan naar \\ \texttt{ https://registry.npmjs.org/\{packageName\}}. De node reconstrueert de repository-URL uit de npm-metadata en geeft een nieuwe JSON-object door met omschrijving, homepage en repository-informatie.
-    \item \textbf{Node 3: Github-node (Code).} Deze node ontvangt de verrijkte npm-data, extraheert \texttt{owner/repo} uit de repository-URL en probeert via de Github API eerst release notes op te halen voor de specifieke tag (\texttt{v\{toVersion\}} of \texttt{toVersion}). Als die niet gevonden wordt, heelt de node de laatste releases op en concateneert de body-teksten tot een \texttt{releaseNotes}-veld. Als er ook geen releases zijn, wordt er nog geprobeerd een \texttt{CHANGELOG.md}, \texttt{CHANGES.md} of \texttt{HISTORY.md} rechtstreeks uit de repository te lezen. De node voegt \texttt{releaseNotes}, \texttt{changelogUrl} en \texttt{source} toe aan de JSON.
+    \item \textbf{Node 3: Github-node (Code).} Deze node ontvangt de verrijkte npm-data, extraheert \texttt{owner/repo} uit de repository-URL en probeert via de Github API eerst release notes op te halen voor de specifieke tag (\texttt{v\{toVersion\}} of \texttt{toVersion}). Als die niet gevonden wordt, geeft de node de laatste releases op en concateneert de body-teksten tot een \texttt{releaseNotes}-veld. Als er ook geen releases zijn, wordt er nog geprobeerd een \texttt{CHANGELOG.md}, \texttt{CHANGES.md} of \texttt{HISTORY.md} rechtstreeks uit de repository te lezen. De node voegt \texttt{releaseNotes}, \texttt{changelogUrl} en \texttt{source} toe aan de JSON.
     \item \textbf{Node 4: HTTP Request (Tavily).} Via een HTTP-request-node wordt de Tavily API aangeroeperen om webresultaten op te halen die extra context kunnen geven over de dependency of de update (bijvoorbeeld blogposts of documentatie rond de nieuwe versie).
     \item \textbf{Node 5: Merge-node (Code).} Deze node voegt de Github-data en Tavily-resultaten samen. De webresultaten worden omgezet naar een tekstveld \texttt{webSnippets} (titel, URL en inhoud per resultaat), dat samen met de eerder verzamelde metadata en release notes wordt doorgegeven aan de AI-node.
     \item \textbf{Node 6: AI-agent (Gemini).} Een AI-node, geconfigureerd met het model \texttt{gemini-2.5-flash}, ontvangt \texttt{releaseNotes}, \texttt{webSnippets} en versie-informatie als input. Met behulp van een system prompt en user prompt genereert het model een gestructureerde samenvatting van de update (bijvoorbeeld features, breaking changes, security-aspecten en migratieadvies).
@@ -173,45 +139,30 @@ De workflow bestaat uit een keten van acht nodes (Figuur~\ref{fig:n8n-workflow})
     \item \textbf{Node 8: Respond to Webhook.} De laatste node stuurt de \texttt{summary} terug als HTTP-respons naar de oorspronkelijke aanroeper. Aan de kant van de webapplicatie kan deze samenvatting vervolgens rechtstreeks worden opgeslagen in de databank.
 \end{itemize}
 
-De Next.js-backend roept de n8n-workflow aan via een dedicated route (vereenvoudigd weergegeven in Listing~\ref{lst:n8n-route}). Deze route valideert eerst de gebruiker met Supabase, leest de dependencygegevens uit de inkomende request (\texttt{dependencyId}, \texttt{name}, \texttt{currentVersion}, \texttt{latestVersion}) en stuurt die als JSON-payload door naar de n8n-webhook. De samenvatting die n8n terugstuurt wordt daarna opgeslagen in het veld \texttt{ai\_summary} van de desbetreffende dependency.
+De Next.js-backend roept de n8n-workflow aan via een dedicated route (vereenvoudigd weergegeven in Codefragment~\ref{lst:n8n-route}). Deze route valideert eerst de gebruiker met Supabase, leest de dependencygegevens uit de inkomende request (\texttt{dependencyId}, \texttt{name}, \texttt{currentVersion}, \texttt{latestVersion}) en stuurt die als JSON-payload door naar de n8n-webhook. De samenvatting die n8n terugstuurt wordt daarna opgeslagen in het veld \texttt{ai\_summary} van de desbetreffende dependency.
 
 \begin{listing}[H]
 \begin{minted}{ts}
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { dependencyId, name, currentVersion, latestVersion } =
-    await request.json();
+  const { dependencyId, name, currentVersion, latestVersion } = await request.json();
 
-  const n8nRes = await fetch(
-    process.env.N8N_WEBHOOK_URL ?? "http://localhost:5678/webhook-test/analyze-dependency",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        packageName: name,
-        fromVersion: currentVersion,
-        toVersion: latestVersion,
-      }),
-    }
-  );
+  const n8nRes = await fetch(process.env.N8N_WEBHOOK_URL!, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ packageName: name, fromVersion: currentVersion, toVersion: latestVersion }),
+  });
 
-  const n8nData = await n8nRes.json();
-  const summary = n8nData.summary;
-
-  await supabase
-    .from("dependencies")
-    .update({ ai_summary: summary })
-    .eq("id", dependencyId);
+  const { summary } = await n8nRes.json();
+  await supabase.from("dependencies").update({ ai_summary: summary }).eq("id", dependencyId);
 
   return NextResponse.json({ summary });
 }
 \end{minted}
-\caption[Aanroep van de n8n-workflow]{Next.js-route die de n8n-workflow aanroept en de samenvatting opslaat}
+\caption{Codefragment: Next.js-route die de n8n-workflow aanroept}
 \label{lst:n8n-route}
 \end{listing}
 
@@ -227,7 +178,7 @@ Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplement
 \section{Implementatie van de OpenAI-agent-builder}
 \label{sec:openai-agent-builder-implementatie}
 
-Als derde AI-integratie wordt een eigen OpenAI-agent geïmplementeerd met de OpenAI API, die dependency updates analyseert via een expliciete tool loop. De agent gebruikt hetzelfde model als Mastra (gpt-4o-mini), gecombineerd met de tools \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}, en volgt een gelijkaardige research-strategie: eerst npm/GitHub metadata, dan webzoekopdrachten bij onvolledige info. Listing~\ref{lst:openai-agent-config} toont de kernconfiguratie met system prompt en agent-loop.
+Als derde AI-integratie wordt een eigen OpenAI-agent geïmplementeerd met de OpenAI API, die dependency updates analyseert via een expliciete tool loop. De agent gebruikt hetzelfde model als Mastra (gpt-4o-mini), gecombineerd met de tools \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}, en volgt een gelijkaardige research-strategie: eerst npm/GitHub metadata, dan webzoekopdrachten bij onvolledige info. Codefragment~\ref{lst:openai-agent-config} toont de kernconfiguratie met system prompt en agent-loop.
 
 \begin{listing}[H]
 \begin{minted}{typescript}
@@ -241,9 +192,9 @@ Call when npm returns "No release notes found"...
 ## Output Format
 ## [package] v[from] → v[to] ([major/minor/patch])
 > Source: [URL]
-### ✅ New Features ### ⚠️ Breaking Changes
-### 🔒 Security Fixes ### 🗑️ Deprecated
-### 📋 Migration Steps ### 🟢 Safe to update?
+### New Features ### Breaking Changes
+### Security Fixes ### Deprecated
+### Migration Steps ### Safe to update?
 `;
 
 export async function analyzeDependency({name, currentVersion, latestVersion}) {
@@ -262,7 +213,7 @@ export async function analyzeDependency({name, currentVersion, latestVersion}) {
 \label{lst:openai-agent-config}
 \end{listing}
 
-De \texttt{fetchNpmInfoTool} (Listing~\ref{lst:openai-npm-tool}) haalt npm-metadata op, zoekt GitHub releases (exact tag of recentste) en valt terug op CHANGELOG parsing met fallback logica voor robuustheid.
+De \texttt{fetchNpmInfoTool} (Codefragment~\ref{lst:openai-npm-tool}) haalt npm-metadata op, zoekt GitHub releases (exact tag of recentste) en valt terug op CHANGELOG parsing met fallback logica voor robuustheid.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -283,7 +234,7 @@ export async function executeFetchNpmInfo(args) {
 \label{lst:openai-npm-tool}
 \end{listing}
 
-Als npm onvoldoende releasenotes vindt, activeert de \texttt{webChangelogSearchTool} (Listing~\ref{lst:openai-web-tool}) een webzoekopdracht via Tavily, Brave of DuckDuckGo, met domeinprioriteit voor officiële sites zoals \texttt{nextjs.org} of \texttt{angular.dev}
+Als npm onvoldoende releasenotes vindt, activeert de \texttt{webChangelogSearchTool} (Codefragment~\ref{lst:openai-web-tool}) een webzoekopdracht via Tavily, Brave of DuckDuckGo, met domeinprioriteit voor officiële sites zoals \texttt{nextjs.org} of \texttt{angular.dev}
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -303,3 +254,17 @@ De Next.js backend roept de OpenAI agent aan via een API route, analoog aan Mast
 
 \section{Integratie met de webapplicatie}
 % hoe dashboard de AI-resultaten ophaalt, toont, beslisregels, enz.
+
+Deze sectie beschrijft hoe de verschillende onderdelen van DepGuard AI samenkomen in de webapplicatie en hoe dependencygegevens, AI-analyses en gebruikersinteracties in een uniforme gerbuikerservaring worden geïntegreerd. De integratie is zodanig opgezet dat de frontend niet rechtstreeks communiceert met externe diensten of AI-componenten, maar steeds via de backendlaag werkt. Dat maakt het mogelijk om authenticatie, validatie, foutafhandeling en opslag centraal te beheren.
+
+De webapplicatie vormt het centrale toegangspunt voor eindgebruikers. Vanuit het dashboard kunnen gebruikers projecten beheren, repositories koppelen, dependencyscans opstarten en de resultaten van AI-analyses bekijken. Daarbij fungeert de frontend in hoofdzaak als presentatielaag: gebruikersacties worden doorgestuurd naar de backendroutes, waarna de backend de nodige gegevens ophaalt, verwerkt en opnieuw in een gestandaardiseerd formaat aan de interface aanbiedt. Deze scheiding tussen gebruikersinterface en serverlogica verhoogt de onderhoudbaarheid en maakt het mogelijk om verschillende AI-implementaties op een uniforme manier in dezelfde applicatie te integreren.
+
+Wanneer een gebruiker een project opent, haalt de applicatie eerst de bijhorende project- en dependencygegevens op uit Supabase. Per dependency worden onder meer de pakketnaam, huidige versie, laatst gekende versie, status en eventuele AI-samenvatting weergegeven. De frontend groepeert deze informatie in een dashboardoverzicht, zodat gebruikers snel kunnen zien welke dependencies verouderd zijn en welke updates bijkomende aandacht vereisen. Indien voor een dependency al een analyse beschikbaar is, wordt die rechtstreeks vanuit de databank geladen en in de interface getoont, zonder dat de AI-component opnieuw moet worden aangeroepen.
+
+Het opstarten van een nieuwe analyse verloopt op aanvraag vanuit de gebruikersinterface. Wanneer een gebruiker een dependency of project laat analyseren, verstuurt de frontend een verzoek naar een backendroute met de relevante parameters, zoals de pakketnaam en de huidige en nieuwste versie. De backend bepaalt vervolgens welke AI-variant beschikbaar is, verrijkt indien nodig de input met bijkomende metadata en stuurt de aanvraag door naar de juiste AI-component. Na verwerking wordt de teruggestuurde samenvatting opgeslagen in de tabel \texttt{dependencies}, zodat de analyse later opnieuw kan worden geraadplaafd zonder de volledige verwerkingsketen te herhalen.
+
+De resultaten van de AI-analyse worden in de webapplicatie niet enkel als vrije tekst weergegeven, maar ingebed in de bredere context van dependencybeheer. De samenvatting wordt gekoppeld aan de desbetreffende dependency en verschijnt samen met versie-informatie, updateclassificatie en eventuele bronverwijzingen, zoals een changelog-URL. Daardoor krijgt de gebruiker niet alleen een tekstuele uitleg van de wijziging, maar ook een concreet overzicht van welke dependency het betreft en welke bijkomende context beschikbaar is. Die koppeling is essentieel om AI-output bruikbaar te maken binnen een dashboardomgeving, aangezien de interpretatie pas waardevol wordt wanneer ze verbonden is met de operationele gegevens van het project.
+
+Naast het ophalen en tonen van analyses ondersteunt de integratie ook de consistente vergelijking tussen de verschillende AI-aanpakken. Omdat alle varianten uiteindelijk een samenvatting in een gelijkaardig formaat teruggeven en die via dezelfde backendlaag in Supabase worden opgeslagen, kan het dashboard deze resultaten op een uniforme manier presenteren. Dat maakt het mogelijk om de verschillende implementaties binnen een applicatiecontext te evalueren, zonder voor elke aanpak een afzonderlijke gebruikersinterface te moeten uitwerken.
+
+De integratie met de webapplicatie vervult daarmee een dubble rol. Enerzijds zorgt ze ervoor dat de gebruikers op een toegankelijke manier met dependencygegevens en AI-analyses kunnen werken. Anderzijds vormt ze de technische verbindingslaag die de verschillende backend- en AI-componenten samenbrengt tot een samenhangend systeem. Hierdoor wordt DepGuard AI niet louter een verzameling losse analysecomponenten, maar een geïntegreerd dashboard dat projectgegevens, update-informatie en AI-ondersteuning samen aanbiedt in een workflow.

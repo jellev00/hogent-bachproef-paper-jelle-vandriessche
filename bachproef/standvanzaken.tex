@@ -147,6 +147,14 @@ Een derde optie is een meer directe, API-gestuurde aanpak waarbij een taalmodel 
 
 Deze aanpak is vooral interessant wanneer de ontwikkelaar de agentflow nauw wil afstemmen op de taak, maar geen extra orkestratielaag wil toevoegen die de controle overneemt. De literatuur wijst erop dat dergelijke API-gestuurde agentconfiguraties nuttig zijn voor taken waarin modellen meerdere tools achtereen moeten kunnen aanroepen en de resultaten daarvan in een gestructureerde output moeten samenbrengen \textcite{OpenAIFunctionCalling,OpenAIToolsDocs}. Daardoor vormen ze een relevante ontwerpoptie binnen het bredere landschap van AI automatisering.
 
+\subsection{Tavily als zoek- en extractielaag}
+
+Naast workflowtools en agentframeworks bestaan ook een categorie bouwstenen die specifiek focust op het ophalen en voorbereiden van externe webinformatie voor AI-toepassingen. Tavily is een dergelijke zoekdienst die is ontworpen voor AI-agents en RAG-workflows, en biedt onder meer een web search API, een extractie-API en mogelijkheden voor site crawling en domeinfiltering \textcite{TavilyDocs2026,TavilyIntro2026}. In tegenstelling tot een klassieke zoekmachine levert Tavily resultaten in een vorm die beter bruikbaar is voor taalmodellen, met relevante titels, URL's, samenvattingen en scores die het model helpen om de meest geschikte bronnen sneller te selecteren \textcite{TavilyDocs2026,TavilyAI2026}.
+
+Voor toepassingen zoals dependency-analyse is dat interessant omdat release notes, migratiegidsen en changelogs niet altijd rechtstreeks beschikbaar zijn via gestructureerde registries. In zulke gevallen kan een zoeklaag zoals Tavily helpen om recente en contextuele informatie op te halen uit officiële documentatie of andere relevante webbronnen. De tool ondersteunt bovendien filters op domein en inhoud, waardoor zoekresultaten gerichter kunnen worden samengesteld en de kans kleiner wordt dat irrelevante of verouderde informatie in de analyse terechtkomt \textcite{TavilyBestPractices2026,TavilyDocs2026}. Daardoor vormt Tavily een nuttige schakel wanneer een agent of workflow verder moet zoeken dan de primaire package-metadata of repository-informatie.
+
+Binnen een geautomatiseerde analyseketen kan Tavily dus functioneren als aanvullende informatiebron tussen de ruwe dependencygegevens en de uiteindelijke AI-samenvatting. De literatuur en documentatie suggereren dat dit type zoekdienst vooral waardevol is wanneer het systeem actuele, brongebonden informatie nodig heeft die nog niet in de primaire databron aanwezig is \textcite{TavilySearch2026,TavilyIntro2026}. In die zin vult Tavily de kloof tussen eenvoudig metadata-opvraging en diepere tekstuele interpretatie van online bronnen.
+
 \section{Synthese: de onderzoeksniche}
 \label{sec: onderzoeksniche}
 
