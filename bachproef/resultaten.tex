@@ -4,3 +4,53 @@
 
 \chapter{\IfLanguageName{dutch}{Resultaten en evaluatie}{Resultaten en evaluatie}}%
 \label{ch:resultaten}
+
+Dit hoofdstuk bespreekt de resultaten van de uitgevoerde evaluatie van de drie AI-varianten binnen DepGuard AI. De analyse vertrekt vanuit de benchmarkuitvoer van de proof-of-concept en vergelijkt de oplossingen op het vlak van specificiteit, volledigheid, actiegerichtheid en verwerkingstijd. Op basis daarvan wordt nagegaan in welke mate de verschillende benaderingen bruikbare ondersteuning bieden voor dependencybeheer in de context van Springbok.
+
+\section{Evaluatiekader}
+\label{sec:evaluatiekader}
+
+De evaluatie werd uitgevoerd op basis van een benchmarkdataset met vijftien uitgezerkte testgevallen, verspreid over drie representatieve updatecategorieën: een minor update van Reat, een minor update van Next.js, een major update van Typescript, een patch update van Zod en een minor update van Tailwindcss. Elke case werd driemaal uitgevoerd per agemt, waardoor per oplossing een vergelijkbare set resultaten beschikbaar is. Voor elke analyse werd een score toegekend op vier criteria: specificiteit, volledigheid, actiegerichtheid en algemene kwaliteit.
+
+Naast de inhoudelijke beoordeling werd ook de verwerkingstijd gemeten. Daarmee kan niet enkel worden gekeken naar de kwaliteit van de analyse, maar ook naar de praktische haalbaarheid van de oplossing in een interactieve dashboardcontext. De becnhmark bevat bovendien beoordelingscommentaar per run, waardoor naast de numerieke score ook kwalitatieve verschillen tussen de agent zichtbaar worden [code_file:180].
+
+\section{Globale prestaties}
+\label{sec:globale-prestaties}
+
+Op basis van de geaggregeerde resultaten behaalt OpenAI de hoogste gemiddelde totaalscore met 8,71 op 10, gevold door Mastra met 8,47 en n8n met 8,25 [code_file:180]. OpenAI scoort bovendien het hoogst op volledigheid en actiegerichtheid, met respectievelijk 9,6 en 8,6 als gemiddelde, terwijl Mastra en n8n iets lager uitkomen op die dimensies [code_file:180]. Dat wijst erop dat de OpenAI-variant de meest consistente balans biedt tussen inhoudelijke dekking en bruikbare samenvatting.
+
+Wat verwerkingstijd betreft is OpenAI eveneens het snelst, met een gemiddelde latency van ongeveer 5,18 seconden. n8n volgt met ongeveer 7,02 seconden, terwijl Mastra duidelijk trager is met gemiddeld 11,66 seconden per analyse [code_file:180]. Die verschillen zijn relevant in een dashboardcontext, omdat de resultaten niet alleen correct moeten zijn, maar ook snel genoeg beschikbaar moeten worden gemaakt om de gebruikerservaring vlot te houden.
+
+\section{Per agent}
+\label{sec:per-agent}
+
+De OpenAI-variant levert in de meeste gevallen de meest compacte maar tegelijk volledige samenvattingen op. In de benchmark worden vaak alle verwachte onderdelen opgenomen, namelijk nieuwe functies, breaking changes, migratiestappen en een expliciete veiligheidsinschatting. De beoordelingen wijzen erop dat deze aanpak vooral sterk is wanneer ontwikkelaars snel een onderbouwde beslissing moeten nemen zonder zelf nog door de volledige changelog te moeten gaan [code_file:180].
+
+Mastra scoort het hoogste wanneer inhoudelijke volledigheid centraal staat. De analyses bevatten doorgaans veel detail over nieuwe functies, breaking changes en migratiestappen, en de beoordelingscommentaren tonen aan dat deze variant vaak las specifiek en bruikbaar wordt ervaren [code_file:180]. Tegelijk is Mastra ook de traagste aanpak, wat suggereert dat de extra volledigheid gepaard gaat met een merkbare kost op vlak van doorlooptijd. Voor een interactief dashboard is dar een belangrijk aandachtspunt.
+
+De n8n-variant presteert gemiddeld degelijk, maar toont meer variantie in volledigheid. In meerdere testgevallen ontbreken migratiestappen of blijft de inhoud van bepaalde scties beperkter, ook al blijft de eindconclusie vaak bruikbaar voor een snelle beslissing [code_file:180]. Die combinatie maakt n8n functioneel inzitbaar, maar inhoudelijk minder sterk dan de andere twee oplossingen wanneer de analyse expliciet ondersteuning moet bieden bij het inschatten van impact en vervolgstappen.
+
+\section{Vergelijking per testcase}
+\label{sec:vergelijking-per-testcase}
+
+Bij de React minor update valt op dat OpenAI de meest evenwichtige analyse oplevert. De output bevat duidelijk duiding van de wijziging, een correcte veiligheidsinschatting en voldoende context om de update zonder bijkomende lezing te beoordelen [code_file:180]. Mastra levert hier meer detail over deprecated APIs en mogelijke aandachtspunten, terwijl n8n soms minder volledig is in de migratieinformatie.
+
+Bij de Next.js minor update blijft hetzelfde patroon zichtbaar. OpenAI en Mastra leveren beide bruikbare en inhoudelijk sterke analyses, maar OpenAI blijft sneller en consistenter in structuur [code_file:180]. n8n haalt ook hier bruikbare resultaten, maar de inhoudelijke volledigheid varieert sterker per run, wat de voorspelbaarheid van de output vermindert.
+
+De TypeScript major update vormt de moeilijkste testcase, omdat hier de impact van breaking changes groter is. De evaluatie toont dat alle drie de aanpakken de ernst van de update herkennen, maar OpenAI en Mastra geven meer context over de gevolgen voor de codebase en de nood aan aanpassing [code_file:180]. n8n blijft bruikbaar, maar de feedback wijst vaker op een beperktere concreetheid in de aanbevelingen.
+
+Bij de Zod patch update presteren de drie varianten het best, zoals ook verwacht mag worden bij een kleine versieaanpassing. OpenAI en Mastra geven duidelijke en veilige aanbevelingen, terwijl n8n meestal een correcte maar minder rijke samenvatting oplevert [code_file:180]. Dit bevestigt dat de oplossing vooral sterk is wanneer releaseinformatie beperkt is en de update relatief weinig risico inhoudt.
+
+\section{Interpretatie van de resultaten}
+\label{sec:interpretatie-resultaten}
+
+De benchmarkresultaten tonen aan dat het mogelijk is om dependency-updates automatisch te analyseren en te vertalen naar begrijpelijke samenvatting die bruikbaar zijn voor ontwikkelaars. Tegelijk blijkt dat de kwaliteit van de output sterk afhangt van de gekozen implementatievorm. De resultaten ondersteunen daarmee de hypothese dat een AI-gestuurde laag waardevol kan zijn binnen dependencybeheer, maar dat de praktische meerwaarde niet alleen wordt bepaald door het taalmodel zelf, maar ook door de orkestratie, bronselectie en fallbacklogica.
+
+De evaluatie bevestigt ook dat geen enkele variant in alle opzichten dominant is. OpenAI is het snelst en scoort het hoogste op algemene kwaliteit, Mastra is het meest gedetailleerd maar trager, en n8n is functioneel bruikbaar maar minder stabiel op vlak van volledigheid [code_file:180]. Voor de context van Springbok betekent dit dat de keuze voor een implementatie niet uitsluitend op outputkwaliteit kan worden gebaseerd, maar ook op onderhoudbaarheid, integratiemogelijkheden en gewenste reactietijd.
+
+\section{Antwoord op de onderzoeksvraag}
+\label{sec:antwoord-onderzoeksvraag}
+
+De resultaten tonen aan dat een AI-gedreven agent effectief kan worden ingezet om dependency-updates uit bestaande tools voor automatisch dependencybeheer te analyseren en te beheren. In de praktijk gebeurt dit door versie-informatie, release notes en changelogs te verzamelen, te structureren en om te zetten naar een samenvatting die het kernteam toelaat sneller te beslissen. De benchmark laat zien dat deze aanpak bruikbare output oplevert voor zowel kleine als grote updates, met een duidelijke meerwaarde voor het inschatten van impact en prioriteit [code_file:180].
+
+Daarmee wordt de onderzoeksvraag bevestigend beantwoord: een AI-gestuurde analyselaag kan het manuele werk rond dependency-updates beperken, op voorwaarde dat de informatiebronselectie, de outputstructuur en de integratie binnen het dashboard voldoende doordacht zijn. De beste resultaten worden behaald wanneer de agent niet enkel samenvat, maar ook context bewaart en een heldere veiligheidsinschatting formuleert [code_file:180].
