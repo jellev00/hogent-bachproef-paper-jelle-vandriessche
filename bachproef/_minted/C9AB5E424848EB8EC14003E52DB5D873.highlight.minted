@@ -9,9 +9,12 @@
 \PYG{l+s+sb}{\PYGZsh{}\PYGZsh{} Output Format}
 \PYG{l+s+sb}{\PYGZsh{}\PYGZsh{} [package] v[from] → v[to] ([major/minor/patch])}
 \PYG{l+s+sb}{\PYGZgt{} Source: [URL]}
-\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} New Features \PYGZsh{}\PYGZsh{}\PYGZsh{} Breaking Changes}
-\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Security Fixes \PYGZsh{}\PYGZsh{}\PYGZsh{} Deprecated}
-\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Migration Steps \PYGZsh{}\PYGZsh{}\PYGZsh{} Safe to update?}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} New Features}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Breaking Changes}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Security Fixes}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Deprecated}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Migration Steps}
+\PYG{l+s+sb}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Safe to update?}
 \PYG{l+s+sb}{`}\PYG{p}{;}
 
 \PYG{k}{export}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{analyzeDependency}\PYG{p}{(\PYGZob{}}\PYG{n+nx}{name}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{currentVersion}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{latestVersion}\PYG{p}{\PYGZcb{})}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
