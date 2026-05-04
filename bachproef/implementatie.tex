@@ -10,7 +10,15 @@ In dit hoofdstuk wordt beschreven hoe de concepten uit de literatuur en de requi
 \section{Architectuur van het systeem}
 % hoog niveau: frontend, backend, database, AI-laag, integratie met GitHub/n8n/Mastra/OpenAI-Agent-Builder
 
-Het proof-of-concept voor DepGuard AI is opgezet als een moderne webarchitectuur met een duidelijke scheiding tussen frontend, backend, databank en AI-laag. De oplossing wordt gehost als een Next.js-applicatie bovenop Node.js, met Supabase als beheerde PostgreSQL-databank en Mastra, n8n en de OpenAI-agent-builder als afzonderlijke AI- en workflowcomponenten. Figuur~\ref{fig:arch-overview} toont de globale systeemarchitectuur.
+Het proof-of-concept voor DepGuard AI is opgezet als een moderne webarchitectuur met een duidelijke scheiding tussen frontend, backend, databank en AI-laag. De technologiekeuzes werden gemaakt op basis van de vereisten uit Fase 2 en de volgende criteria:
+
+\begin{itemize}
+    \item \textbf{Frontend (Next.js, Tailwind CSS, shadcn/ui)}: Next.js biedt een robuuste full-stack basis met server-side rendering en API-routes. Tailwind CSS en shadcn/ui zorgen voor consistente, toegankelijke componenten met minimale boilerplate.
+    \item \textbf{Backend en databank (Supabase)}: PostgreSQL met Row Level Security voldoet aan de eisen voor multi-tenant isolatie, realtime updates en eenvoudige integratie met Next.js.
+    \item \textbf{AI-kern (Mastra, n8n, OpenAI Agent Builder)}: Deze drie platformen vertegenwoordigen respectievelijk code-gedreven frameworks, low-code workflows en API-gestuurde configuraties. De selectie is gebaseerd op representativiteit, tool-ondersteuning, integratiegemak en documentatiekwaliteit.
+\end{itemize}
+
+Figuur~\ref{fig:arch-overview} toont de globale systeemarchitectuur.
 
 \begin{figure}[H]
   \centering
@@ -19,13 +27,13 @@ Het proof-of-concept voor DepGuard AI is opgezet als een moderne webarchitectuur
   \label{fig:arch-overview}
 \end{figure}
 
-De frontend is een Next.js-Reactdashboard dat authenticatie, projectbeheer en visualisatie van dependency- en AI-informatie verzorgt. Gebruikers kunnen bedrijven en projecten aanmaken, GitHub-repositories koppelen, dependency-scans opstarten en de door de AI gegenereerde samenvattingen en adviezen raadplegen. Voor de UI wordt gebruikgemaakt van Tailwind CSS en shadcn/ui, zodat componenten consistent en herbruikbaar zijn.
+De frontend is een Next.js dashboard dat authenticatie, projectbeheer en visualisatie van dependency- en AI-informatie verzorgt. Gebruikers kunnen bedrijven en projecten aanmaken, GitHub-repositories koppelen, dependency-scans opstarten en de door de AI gegenereerde samenvattingen en adviezen raadplegen. Voor de UI wordt gebruikgemaakt van Tailwind CSS en shadcn/ui, zodat componenten consistent en herbruikbaar zijn.
 
 De backend bestaat uit een set Next.js API-routes die fungeren als orkestratielaag tussen de frontend, Supabase, externe APIs (GitHub, npm, Tavily) en de verschillende AI-componenten. Bij een scan leest de backend eerst de dependencyinformatie van een project (bijvoorbeeld uit \texttt{package.json} in GitHub), slaat de resultaten op in Supabase en roept vervolgens één van de AI-varianten aan: de mastra-agent, de n8n-workflow of de OpenAI-agent. De teruggestuurde samenvatting wordt gekoppeld aan de dependency en via het dashboard zichtbaar gemaakt voor de gebruiker.
 
-Supabase verzorgt de presistente opslag van bedrijven, bedrijfleden, gebruikers, uitnodigingen, projecten, projectleden en dependencies, met Row Level Security om multi-tenant isolatie te garanderen. Het conceptuele datamodel is opgebouwd rond een centrale bedrijfsstructuur, waarvan gebruikers, projecten en dependencygegevens gekoppeld worden. De tabel \texttt{companies} bevat de kerngegevens van een organisatie en verwijst naar de eigenaar via \texttt{owner_id}. Via \texttt{company_members} worden bijkomende gebruikers aan een bedrijf gekoppeld, inclusief hun rol en het moment waarop ze werden uitgenodigd of geaccepteerd. De tabel \texttt{profiles} bewaart de profielgegevens van gebruikers en kan optioneel gekoppeld zijn aan een bedrijf.
+Supabase verzorgt de persistente opslag van bedrijven, bedrijfleden, gebruikers, uitnodigingen, projecten, projectleden en dependencies, met Row Level Security om multi-tenant isolatie te garanderen. Het conceptuele datamodel is opgebouwd rond een centrale bedrijfsstructuur, waarvan gebruikers, projecten en dependencygegevens gekoppeld worden. De tabel \texttt{companies} bevat de kerngegevens van een organisatie en verwijst naar de eigenaar via \texttt{owner\_id}. Via \texttt{company\_members} worden bijkomende gebruikers aan een bedrijf gekoppeld, inclusief hun rol en het moment waarop ze werden uitgenodigd of geaccepteerd. De tabel \texttt{profiles} bewaart de profielgegevens van gebruikers en kan optioneel gekoppeld zijn aan een bedrijf.
 
-De projectstructuur vertrekt vanuit \texttt{projects}, waar elk project behoort tot een bedrijf en een aanmaker heeft. Via \texttt{project_members} worden gebruikers aan projecten gekoppeld met een specifieke rol, zodat toegang en verantwoordelijkheden per project kunnen verschillen. De tabel \texttt{dependencies} bevat vervolgens de concrete dependencies per project, samen met versies, statusinformatie, AI-samenvattingen en metadata zoals de changelog-URL en het tijdstip van de laatste controle. Ten slotte laat \texttt{invitations} toe om nieuwe gebruikers uit te nodigen voor een bedrijf via een tokengebaseerde uitnodiging. Figuur~\ref{fig:erd} toont hoe deze entiteiten samen het datamodel vormen waarop het dashboard steunt.
+De projectstructuur vertrekt vanuit \texttt{projects}, waar elk project behoort tot een bedrijf en een aanmaker heeft. Via \texttt{project\_members} worden gebruikers aan projecten gekoppeld met een specifieke rol, zodat toegang en verantwoordelijkheden per project kunnen verschillen. De tabel \texttt{dependencies} bevat vervolgens de concrete dependencies per project, samen met versies, statusinformatie, AI samenvattingen en metadata zoals de changelog-URL en het tijdstip van de laatste controle. Ten slotte laat \texttt{invitations} toe om nieuwe gebruikers uit te nodigen voor een bedrijf via een tokengebaseerde uitnodiging. Figuur~\ref{fig:erd} toont hoe deze entiteiten samen het datamodel vormen waarop het dashboard steunt.
 
 \begin{figure}[H]
   \centering
@@ -41,7 +49,7 @@ De AI-laag bestaat uit drie parallelle paden die in aparte secties verder worden
 
 Voor de eerste AI-integratie wordt gebruikgemaakt van Mastra, een TypeScript framework om AI-agents, tools en workflows te definiëren en te orchestreren. In de proof-of-concept wordt een \texttt{dependencyAgent} opgezet die specifiek is afgestemd op het analyseren van npm-dependency-updates. Deze agent combineert een taalmodel (bijvoorbeeld Google's \texttt{gemini-2.5-flash} of OpenAI's \texttt{gpt-4o-mini}) met twee eigen tools: \texttt{fetchNpmInfoTool} en \texttt{webChangelogSearchTool}.
 
-De agent volgt een gestructureerde research-strategie: eerst haalt de \texttt{fetchNpmInfoTool} metadata en releasenotes op uit npm en GitHub; als die incompleet zijn, volgt de \texttt{webChangelogSearchTool} met een gerichte webzoekopdracht naar changelogs. Het resultaat wordt gecombineerd en volgens een strikt JSON-formaat geformatteerd, zodat ontwikkelaars direct actionable inzichten krijgen over features, breaking changes, security fixes en migratiestappen. Codefragment~\ref{lst:mastra-agent-config} toont de definitie van de agent.
+De agent volgt een gestructureerde research-strategie: eerst haalt de \texttt{fetchNpmInfoTool} metadata en releasenotes op uit npm en GitHub; als die incompleet zijn, volgt de \texttt{webChangelogSearchTool} met een gerichte webzoekopdracht naar changelogs. Het resultaat wordt gecombineerd en volgens een strikt JSON-formaat geformatteerd, zodat ontwikkelaars direct actiegerichte inzichten krijgen over features, breaking changes, security fixes en migratiestappen. Codefragment~\ref{lst:mastra-agent-config} toont de definitie van de agent.
 
 \begin{listing}[H]
 \begin{minted}{typescript}
@@ -59,11 +67,11 @@ export const dependencyAgent = new Agent({
   },
 });
 \end{minted}
-\caption{Codefragment: \texttt{dependencyAgent}-configuratie met tools en research-strategie}
+\caption{Configuratie van de \texttt{dependencyAgent} met de nodige tools voor de gekozen research strategie}
 \label{lst:mastra-agent-config}
 \end{listing}
 
-De \texttt{fetchNpmInfoTool} (Codefragment~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
+De \texttt{fetchNpmInfoTool} (zie Codefragment~\ref{lst:npm-tool}) is de primaire tool voor het ophalen van npm-metadata en GitHub-release notes. De tool zoekt eerst naar een exacte release-tag (bijvoorbeeld \texttt{v1.2.3}), valt terug op de laatste vijf releases als die niet bestaat, en probeert vervolgens CHANGELOG bestanden (\texttt{CHANGELOG.md}, \texttt{HISTORY.md}, …) uit de repository te lezen. Dankzij fallback logica en robuuste foutafhandeling levert de tool altijd een gestructureerd resultaat, zelfs als er geen officiële release notes zijn.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -96,7 +104,7 @@ export const fetchNpmInfoTool = createTool({
 \label{lst:npm-tool}
 \end{listing}
 
-Als de npm-tool geent nuttige release notes vindt, volgt de \texttt{webChangelogSearchTool} (Codefragment~\ref{lst:web-search-tool}). Deze tool voert een gerichte webzoekopdracht uit naar changelogs via Tavily, Brave Search of DuckDuckGo, met domeinpriorisering voor officiële package-sites (bijvoorbeeld \texttt{nextjs.org}, \texttt{angular.dev}). De tool prioriteert resultaten van officiële documentatie boven aggregators en levert een lijst van relevante titels, URL's en snippets.
+Als de npm-tool geen nuttige release notes vindt, volgt de \texttt{webChangelogSearchTool} (Codefragment~\ref{lst:web-search-tool}). Deze tool voert een gerichte webzoekopdracht uit naar changelogs via Tavily, Brave Search of DuckDuckGo, met domeinpriorisering voor officiële package-sites (bijvoorbeeld \texttt{nextjs.org}, \texttt{angular.dev}). De tool prioriteert resultaten van officiële documentatie boven aggregators en levert een lijst van relevante titels, URL's en snippets.
 
 \begin{listing}[H]
 \begin{minted}[linenos=false]{typescript}
@@ -109,9 +117,21 @@ export const webChangelogSearchTool = createTool({
   }),
   execute: async ({ packageName, fromVersion, toVersion }) => {
     const query = buildQuery(packageName, fromVersion, toVersion);
-    return process.env.TAVILY_API_KEY
-      ? await searchWithTavily(query, packageName, toVersion)
-      : await searchWithDuckDuckGo(query);
+    try {
+      const provider = process.env.CHANGELOG_SEARCH_PROVIDER || "tavily"
+
+      if (provider === "brave" && process.env.BRAVE_SEARCH_API_KEY) {
+        return await searchWithBrave(query);
+      }
+
+      if (process.env.TAVILY_API_KEY) {
+        return await searchWithTavily(query, packageName, toVersion);
+      }
+
+      return await searchWithDuckDuckGo(query);
+    } catch (err) {
+      return { results: [], query };
+    }
   },
 });
 \end{minted}
@@ -126,7 +146,16 @@ De Mastra-agent wordt vanuit de Next.js-backend aangeroepen via een API-route di
 
 Als tweede AI-integratie wordt een n8n-workflow opgezet die dezelfde kernfunctie vervult als de Mastra-agent, maar dan in een low-code, visueel georkestreerde omgeving. De workflow ontvangt een HTTP-aanvraag vanuit de webapplicatie, verrijkt de aangeleverde dependency-informatie met data uit npm, Github en een webzoekdienst (Tavily)\footnote{Tavily is een API en infrastructuurlaag die AI-agents en LLM-toepassingen real-time toegang geeft tot webzoekopdrachten, webextractie en crawling.\url{https://www.tavily.com/}}, en laat vervolgens een AI-model (Gemini 2.5 flash) een samenvatting genereren van de relevante wijzigingen. Het resultaat wordt teruggestuurd naar de applicatie via de webhook-respons en opgeslagen in de databank.
 
-De workflow bestaat uit een keten van acht nodes (Figuur~\ref{fig:n8n-workflow}):
+De workflow bestaat uit een keten van acht nodes (zie Figuur~\ref{fig:n8n-workflow}):
+
+% Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplementeerd in deze bachelorproef, met de opeenvolgende nodes van inkomnde webhook tot AI-gegenereerde samenvatting.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]{img/n8n-workflow.png}
+  \caption[AI-workflow in n8n]{Overzicht van de n8n-workflow die metadata, release notes, webcontext en AI-samenvatting combineert}
+  \label{fig:n8n-workflow}
+\end{figure}
 
 \begin{itemize}
     \item \textbf{Node 1: Webhook.} Deze node fungeert als ingangspunt voor de workflow en wordt getriggerd zodra de Next.js-backend een HTTP-aanvraag naar de n8n-URL stuurt. De node is geconfigureerd om te antwoorden via een aparte \emph{Respond to Webhook}-node, zodat alle tussenliggende stappen eerst afgewerkt worden.
@@ -166,15 +195,6 @@ export async function POST(request: Request) {
 \label{lst:n8n-route}
 \end{listing}
 
-Figuur~\ref{fig:n8n-workflow} toont de volledige n8n-workflow zoals geïmplementeerd in deze bachelorproef, met de opeenvolgende nodes van inkomnde webhook tot AI-gegenereerde samenvatting.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth,keepaspectratio]{img/n8n-workflow.png}
-  \caption[AI-workflow in n8n]{Overzicht van de n8n-workflow die metadata, release notes, webcontext en AI-samenvatting combineert}
-  \label{fig:n8n-workflow}
-\end{figure}
-
 \section{Implementatie van de OpenAI-agent-builder}
 \label{sec:openai-agent-builder-implementatie}
 
@@ -209,7 +229,7 @@ export async function analyzeDependency({name, currentVersion, latestVersion}) {
   }
 }
 \end{minted}
-\caption{OpenAI \\texttt{dependencyAgent} met system prompt en tool-loop}
+\caption{OpenAI \texttt{dependencyAgent} met system prompt en tool-loop}
 \label{lst:openai-agent-config}
 \end{listing}
 
@@ -230,7 +250,7 @@ export async function executeFetchNpmInfo(args) {
   return { description: npmData.description || "", releaseNotes: releaseNotes || "No release notes found" };
 }
 \end{minted}
-\caption{\\texttt{fetchNpmInfoTool}: npm-metadata en GitHub-releases met CHANGELOG-fallback}
+\caption{\texttt{fetchNpmInfoTool}: npm-metadata en GitHub-releases met CHANGELOG-fallback}
 \label{lst:openai-npm-tool}
 \end{listing}
 
@@ -240,13 +260,22 @@ Als npm onvoldoende releasenotes vindt, activeert de \texttt{webChangelogSearchT
 \begin{minted}[linenos=false]{typescript}
 export async function executeWebChangelogSearch(args) {
   const query = buildQuery(args.packageName, args.fromVersion, args.toVersion);
-  if (process.env.TAVILY_API_KEY) {
-    return await searchWithTavily(query, args.packageName);
+  try {
+    const provider = process.env.CHANGELOG_SEARCH_PROVIDER || "tavily";
+
+    if (provider === "brave" && process.env.BRAVE_SEARCH_API_KEY) {
+      return await searchWithBrave(query);
+    }
+    if (process.env.TAVILY_API_KEY) {
+      return await searchWithTavily(query, packageName);
+    }
+    return await searchWithDuckDuckGo(query);
+  } catch {
+        return { results: [], query };
   }
-  return await searchWithDuckDuckGo(query); // fallback
 }
 \end{minted}
-\caption{\\texttt{webChangelogSearchTool}: webzoekopdrachten naar changelogs}
+\caption{\texttt{webChangelogSearchTool}: webzoekopdrachten naar changelogs}
 \label{lst:openai-web-tool}
 \end{listing}
 
@@ -255,16 +284,16 @@ De Next.js backend roept de OpenAI agent aan via een API route, analoog aan Mast
 \section{Integratie met de webapplicatie}
 % hoe dashboard de AI-resultaten ophaalt, toont, beslisregels, enz.
 
-Deze sectie beschrijft hoe de verschillende onderdelen van DepGuard AI samenkomen in de webapplicatie en hoe dependencygegevens, AI-analyses en gebruikersinteracties in een uniforme gerbuikerservaring worden geïntegreerd. De integratie is zodanig opgezet dat de frontend niet rechtstreeks communiceert met externe diensten of AI-componenten, maar steeds via de backendlaag werkt. Dat maakt het mogelijk om authenticatie, validatie, foutafhandeling en opslag centraal te beheren.
+Deze sectie beschrijft hoe de verschillende onderdelen van DepGuard AI samenkomen in de webapplicatie en hoe dependencygegevens, AI-analyses en gebruikersinteracties in een uniforme gebruikerservaring worden geïntegreerd. De integratie is zodanig opgezet dat de frontend niet rechtstreeks communiceert met externe diensten of AI-componenten, maar steeds via de backendlaag werkt. Dat maakt het mogelijk om authenticatie, validatie, foutafhandeling en opslag centraal te beheren.
 
 De webapplicatie vormt het centrale toegangspunt voor eindgebruikers. Vanuit het dashboard kunnen gebruikers projecten beheren, repositories koppelen, dependencyscans opstarten en de resultaten van AI-analyses bekijken. Daarbij fungeert de frontend in hoofdzaak als presentatielaag: gebruikersacties worden doorgestuurd naar de backendroutes, waarna de backend de nodige gegevens ophaalt, verwerkt en opnieuw in een gestandaardiseerd formaat aan de interface aanbiedt. Deze scheiding tussen gebruikersinterface en serverlogica verhoogt de onderhoudbaarheid en maakt het mogelijk om verschillende AI-implementaties op een uniforme manier in dezelfde applicatie te integreren.
 
-Wanneer een gebruiker een project opent, haalt de applicatie eerst de bijhorende project- en dependencygegevens op uit Supabase. Per dependency worden onder meer de pakketnaam, huidige versie, laatst gekende versie, status en eventuele AI-samenvatting weergegeven. De frontend groepeert deze informatie in een dashboardoverzicht, zodat gebruikers snel kunnen zien welke dependencies verouderd zijn en welke updates bijkomende aandacht vereisen. Indien voor een dependency al een analyse beschikbaar is, wordt die rechtstreeks vanuit de databank geladen en in de interface getoont, zonder dat de AI-component opnieuw moet worden aangeroepen.
+Wanneer een gebruiker een project opent, haalt de applicatie eerst de bijhorende project- en dependencygegevens op uit Supabase. Per dependency worden onder meer de pakketnaam, huidige versie, laatst gekende versie, status en eventuele AI-samenvatting weergegeven. De frontend groepeert deze informatie in een dashboardoverzicht, zodat gebruikers snel kunnen zien welke dependencies verouderd zijn en welke updates bijkomende aandacht vereisen. Indien voor een dependency al een analyse beschikbaar is, wordt die rechtstreeks vanuit de databank geladen en in de interface getoond, zonder dat de AI-component opnieuw moet worden aangeroepen.
 
-Het opstarten van een nieuwe analyse verloopt op aanvraag vanuit de gebruikersinterface. Wanneer een gebruiker een dependency of project laat analyseren, verstuurt de frontend een verzoek naar een backendroute met de relevante parameters, zoals de pakketnaam en de huidige en nieuwste versie. De backend bepaalt vervolgens welke AI-variant beschikbaar is, verrijkt indien nodig de input met bijkomende metadata en stuurt de aanvraag door naar de juiste AI-component. Na verwerking wordt de teruggestuurde samenvatting opgeslagen in de tabel \texttt{dependencies}, zodat de analyse later opnieuw kan worden geraadplaafd zonder de volledige verwerkingsketen te herhalen.
+Het opstarten van een nieuwe analyse verloopt op aanvraag vanuit de gebruikersinterface. Wanneer een gebruiker een dependency of project laat analyseren, verstuurt de frontend een verzoek naar een backendroute met de relevante parameters, zoals de pakketnaam en de huidige en nieuwste versie. De backend bepaalt vervolgens welke AI-variant beschikbaar is, verrijkt indien nodig de input met bijkomende metadata en stuurt de aanvraag door naar de juiste AI-component. Na verwerking wordt de teruggestuurde samenvatting opgeslagen in de tabel \texttt{dependencies}, zodat de analyse later opnieuw kan worden geraadpleegd zonder de volledige verwerkingsketen te herhalen.
 
 De resultaten van de AI-analyse worden in de webapplicatie niet enkel als vrije tekst weergegeven, maar ingebed in de bredere context van dependencybeheer. De samenvatting wordt gekoppeld aan de desbetreffende dependency en verschijnt samen met versie-informatie, updateclassificatie en eventuele bronverwijzingen, zoals een changelog-URL. Daardoor krijgt de gebruiker niet alleen een tekstuele uitleg van de wijziging, maar ook een concreet overzicht van welke dependency het betreft en welke bijkomende context beschikbaar is. Die koppeling is essentieel om AI-output bruikbaar te maken binnen een dashboardomgeving, aangezien de interpretatie pas waardevol wordt wanneer ze verbonden is met de operationele gegevens van het project.
 
 Naast het ophalen en tonen van analyses ondersteunt de integratie ook de consistente vergelijking tussen de verschillende AI-aanpakken. Omdat alle varianten uiteindelijk een samenvatting in een gelijkaardig formaat teruggeven en die via dezelfde backendlaag in Supabase worden opgeslagen, kan het dashboard deze resultaten op een uniforme manier presenteren. Dat maakt het mogelijk om de verschillende implementaties binnen een applicatiecontext te evalueren, zonder voor elke aanpak een afzonderlijke gebruikersinterface te moeten uitwerken.
 
-De integratie met de webapplicatie vervult daarmee een dubble rol. Enerzijds zorgt ze ervoor dat de gebruikers op een toegankelijke manier met dependencygegevens en AI-analyses kunnen werken. Anderzijds vormt ze de technische verbindingslaag die de verschillende backend- en AI-componenten samenbrengt tot een samenhangend systeem. Hierdoor wordt DepGuard AI niet louter een verzameling losse analysecomponenten, maar een geïntegreerd dashboard dat projectgegevens, update-informatie en AI-ondersteuning samen aanbiedt in een workflow.
+De integratie met de webapplicatie vervult daarmee een dubbele rol. Enerzijds zorgt ze ervoor dat de gebruikers op een toegankelijke manier met dependencygegevens en AI-analyses kunnen werken. Anderzijds vormt ze de technische verbindingslaag die de verschillende backend- en AI-componenten samenbrengt tot een samenhangend systeem. Hierdoor wordt DepGuard AI niet louter een verzameling losse analysecomponenten, maar een geïntegreerd dashboard dat projectgegevens, update-informatie en AI-ondersteuning samen aanbiedt in een workflow.

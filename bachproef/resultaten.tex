@@ -10,7 +10,7 @@ Dit hoofdstuk bespreekt de resultaten van de uitgevoerde evaluatie van de drie A
 \section{Evaluatiekader}
 \label{sec:evaluatiekader}
 
-De evaluatie werd uitgevoerd op basis van een benchmarkdataset met twaalf uitgezerkte testgevallen, verspreid over drie representatieve updatecategorieën: een minor update van React, een minor update van Next.js, een major update van TypeScript en een patch update van Zod. Elke case werd driemaal uitgevoerd per agent, waardoor per oplossing een vergelijkbare set resultaten beschikbaar is. Voor elke analyse werd een score toegekend op vier criteria: specificiteit, volledigheid, actiegerichtheid en algemene kwaliteit.
+De evaluatie werd uitgevoerd op basis van een benchmarkdataset met twaalf uitgewerkte testgevallen, verspreid over drie representatieve updatecategorieën: een minor update van React, een minor update van Next.js, een major update van TypeScript en een patch update van Zod. Elke case werd driemaal uitgevoerd per agent, waardoor per oplossing een vergelijkbare set resultaten beschikbaar is. Voor elke analyse werd een score toegekend op vier criteria: specificiteit, volledigheid, actiegerichtheid en algemene kwaliteit.
 
 Naast de inhoudelijke beoordeling werd ook de verwerkingstijd gemeten. Daarmee kan niet enkel worden gekeken naar de kwaliteit van de analyse, maar ook naar de praktische haalbaarheid van de oplossing in een interactieve dashboardcontext. De benchmark bevat bovendien beoordelingscommentaar per run, waardoor naast de numerieke score ook kwalitatieve verschillen tussen de agent zichtbaar worden.
 
@@ -61,7 +61,7 @@ De OpenAI-variant levert in de meeste gevallen de meest compacte maar tegelijk v
 
 Mastra scoort het hoogste wanneer inhoudelijke volledigheid centraal staat. De analyses bevatten doorgaans veel detail over nieuwe functies, breaking changes en migratiestappen, en de beoordelingscommentaren tonen aan dat deze variant vaak las specifiek en bruikbaar wordt ervaren. Tegelijk is Mastra ook de traagste aanpak, wat suggereert dat de extra volledigheid gepaard gaat met een merkbare kost op vlak van doorlooptijd. Voor een interactief dashboard is dar een belangrijk aandachtspunt.
 
-De n8n-variant presteert gemiddeld degelijk, maar toont meer variantie in volledigheid. In meerdere testgevallen ontbreken migratiestappen of blijft de inhoud van bepaalde scties beperkter, ook al blijft de eindconclusie vaak bruikbaar voor een snelle beslissing. Die combinatie maakt n8n functioneel inzitbaar, maar inhoudelijk minder sterk dan de andere twee oplossingen wanneer de analyse expliciet ondersteuning moet bieden bij het inschatten van impact en vervolgstappen.
+De n8n-variant presteert gemiddeld degelijk, maar toont meer variantie in volledigheid. In meerdere testgevallen ontbreken migratiestappen of blijft de inhoud van bepaalde secties beperkter, ook al blijft de eindconclusie vaak bruikbaar voor een snelle beslissing. Die combinatie maakt n8n functioneel inzitbaar, maar inhoudelijk minder sterk dan de andere twee oplossingen wanneer de analyse expliciet ondersteuning moet bieden bij het inschatten van impact en vervolgstappen.
 
 \section{Vergelijking per testcase}
 \label{sec:vergelijking-per-testcase}

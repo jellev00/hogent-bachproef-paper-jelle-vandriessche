@@ -58,7 +58,7 @@ Dit hoofdstuk schetst de stand van zaken rond dependencybeheer, technische shuld
 \section{Dependency-updates als onderhoudslast}
 \label{sec:dependencybeheer}
 
-Softwareprojecten steunen in toenemende mate op open-source dependencies, waardoor het onderhoud van externe bibliotheken een structureel onderdeel is geworden van moderne softwareontwikkeling. Die afhankelijkheid verhoogt de snelheid waarmee teams kunnen bouwen, maar maakt projecten tegelijk kwetsbaar voor verouderde of onveilige versies van componenten die buiten de eigen codebasis liggen \textcite{Pashchenko2018}. Dependencybeheer is daardoor niet langer een louter technische beheertaak, maar een voortdurende onderhoudsverantwoordelijkheid die rechtstreeks samenhangt met stabiliteit, veiligheid en evolueerbaarheid van software.
+Softwareprojecten steunen in toenemende mate op open-source dependencies, waardoor het onderhoud van externe bibliotheken een structureel onderdeel is geworden van moderne softwareontwikkeling. Die afhankelijkheid verhoogt de snelheid waarmee teams kunnen bouwen, maar maakt projecten tegelijk kwetsbaar voor verouderde of onveilige versies van componenten die buiten de eigen codebasis liggen \autocite{Pashchenko2018}. Dependencybeheer is daardoor niet langer een louter technische beheertaak, maar een voortdurende onderhoudsverantwoordelijkheid die rechtstreeks samenhangt met stabiliteit, veiligheid en evolueerbaarheid van software.
 
 \subsection{Kwetsbare en verouderde dependencies in de praktijk}
 
@@ -66,9 +66,9 @@ Onderzoek toont aan dat kwetsbaarheden in externe libraries niet uitzonderlijk z
 
 Daarnaast maakt het onderscheid tussen daadwerkelijk in productie gebruikte dependencies en packages die enkel in ontwikkeling of testing voorkomen duidelijk dat niet elke kwetsbaarheid dezelfde impact heeft \textcite{Pashchenko2018}. Juist daarom is context belangrijk: teams moeten kunnen inschatten welke dependency werkelijk risico oplevert en welke update effectief prioriteit verdient. Zonder dat onderscheid ontstaat al snel een overload aan signalen die moeilijk te vertalen is naar concrete onderhoudsbeslissingen.
 
-\sebsection{Technische shuld als gevolg van uitgesteld onderhoud}
+\subsection{Technische shuld als gevolg van uitgesteld onderhoud}
 
-Wanneer updates te lang worden uitgesteld, groeit de onderhoudslast uit tot technische schuld. Die schuld ontstaat wanneer korte termijnkeuzes, zoals het uitstellen van een update om tijd te besparen, op langere termijn leiden tot meer coplexiteit, hogere kosten en grotere kans op fouten \textcite{Behutiye2024,Ruiz2024}. In die zin is het uitblijven van dependency updates niet alleen een operationeel probleem, maar ook een bron van structurele accumulatie van onderhoudsrisico.
+Wanneer updates te lang worden uitgesteld, groeit de onderhoudslast uit tot technische schuld. Die schuld ontstaat wanneer korte termijnkeuzes, zoals het uitstellen van een update om tijd te besparen, op langere termijn leiden tot meer complexiteit, hogere kosten en grotere kans op fouten \textcite{Behutiye2024,Ruiz2024}. In die zin is het uitblijven van dependency updates niet alleen een operationeel probleem, maar ook een bron van structurele accumulatie van onderhoudsrisico.
 
 Empirisch werk toont aan dat technische shuld in industriële context concreet voelbaar wordt via verminderde productiviteit, vertragingen en een grotere foutkans bij softwarelevering \textcite{Chalmers2020}. Voor dependencybeheer betekent dit dat elke gemiste update niet noodzakelijk meteen een incident veroorzaakt, maar wel bijdraagt aan een groeiende achterstand die latere wijzigingen moeilijker en duurder maakt. Het probleem is dus cumulatief: hoe langer teams wachten, hoe groter de inspanning wordt om de achterstand nog gecontroleerd in te halen.
 
@@ -81,7 +81,7 @@ Die kloof verklaart waarom dependency updates vaak blijven liggen, zelfs wanneer
 \section{Bestaande oplossingen en hun grenzen}
 \label{sec:bestaande-oplossingen}
 
-Er bestaan vandaag al meerdere vormen van ondersteuning voor dependencybeheer, gaande van bots die updates detecteren tot tools die pull request automatisch aanmaken. Die oplossingen verlagen de drempel om updates zichtbaar te maken, maar nemen het inhoudelijke beoordelingswerk nog niet weg. Daardoor verschuift de taak van detectie wel naar automatische systemen, maar blijft de interpretatie van changelogs, compatibiliteit en risico's grotendeels bij de ontwikkelaar liggen \textcite{Erlenhov2022,Pashchenko2018}.
+Momenteel bestaan er reeds meerdere vormen van ondersteuning voor dependencybeheer, gaande van bots die updates detecteren tot tools die automatisch een pull request aanmaken. Die oplossingen verlagen de drempel om updates zichtbaar te maken, maar nemen het inhoudelijke beoordelingswerk nog niet weg. Daardoor verschuift de taak van detectie wel naar automatische systemen, maar blijft de interpretatie van changelogs, compatibiliteit en risico's grotendeels bij de ontwikkelaar liggen \textcite{Erlenhov2022,Pashchenko2018}.
 
 \subsection{Dependencybots: wat ze wel en niet doen}
 
@@ -95,9 +95,9 @@ De echte meerwaarde lijkt te liggen in context: een systeem dat niet enkel meldt
 
 Daarmee ontstaat een duidelijk tekortkoming tussen detectie en beslissing. Bestaande oplossingen tonen aan dat updates bestaan en soms zelfs hoe dringend ze zijn, maar ze bieden zelden een compacte, contextbewuste samenvatting die het team helpt om snel te beslissen. Juist die vertaalslag van ruwe updates-informatie naar bruikbare beslissingsinformatie vormt een relevante onderzoeksvraag binnen dit domein.
 
-\Subsection{Bijzondere uitdagingen bij private repositories en registries}
+\subsection{Bijzondere uitdagingen bij private repositories en registries}
 
-De problematiek wordt complexer wanneer dependencies niet publiek beschikbaar zijn, maar via private repositories of interne repistries worden beheerd. In zulke omgevingen is automatische opvolging vaak lastiger, omdat tooling niet altijd dezelfde toegang en metadata krijgt als bij publieke packages. Daardoor kan update informatie minder volledig zijn of moeten teams alternatieve toegangsmechanismen voorzien om de nodige data überhaupt op te halen.
+De problematiek wordt complexer wanneer dependencies niet publiek beschikbaar zijn, maar via private repositories of interne repositories worden beheerd. In zulke omgevingen is automatische opvolging vaak lastiger, omdat tooling niet altijd dezelfde toegang en metadata krijgt als bij publieke packages. Daardoor kan update informatie minder volledig zijn of moeten teams alternatieve toegangsmechanismen voorzien om de nodige data überhaupt op te halen.
 
 Dat maakt private ecosystemen extra relevant voor onderzoek naar dependencybeheer. Niet alleen is de hoeveelheid beschikbare informatie daar vaak beperkter, ook de operationele drempel om die informatie veilig te ontsluiten is hoger. Hierdoor worden de beperkingen van klassieke bots nog scherper zichtbaar: waar publieke packages vaak nog relatief goed ondersteund zijn, ontstaan in private omgevingen sneller blinde vlekken en manuele tussenstappen.
 
@@ -108,7 +108,7 @@ Wanneer de informatie over updates te verspreid of te contextafhankelijk wordt v
 
 \subsection{Wat maakt een taak geschikt voor een AI-agent}
 
-AI-agents zijn vooral nuttig in situaties waar een systeem niet een vaste handeling moet uitvoeren, maar iteratief informatie moet verzamelen, wegen en samenvatten. Recente literatuur beschrijft dat agents bijzonder geschikt zijn voor taken met gestructureerde input, tekstuele context en meerdere beslismomenten \textcite{Joshi2025,Zhu2025}. Dat maakt ze relevant voor softwarecontexten waarin logs, release notes, notificaties of documentatie samen moeten worden geïnterpreteerd.
+AI-agents zijn vooral nuttig in situaties waar een systeem die geen vaste handeling moet uitvoeren, maar iteratief informatie moet verzamelen, analyseren en samenvatten. Uit het onderzoek van \textcite{Joshi2025,Zhu2025} blijkt dat agents bijzonder geschikt zijn voor taken met gestructureerde input, tekstuele context en meerdere beslismomenten. Dat maakt ze relevant voor softwarecontexten waarin logs, release notes, notificaties of documentatie samen moeten worden geïnterpreteerd.
 
 Dependency analyse past goed in dat profiel. Een update bestaat vaak niet uit een duidelijk bericht, maar uit een combinatie van registry metadata, release notes, changelogs en soms aanvullende webdocumentatie. De taak is dus niet alleen informatief, maar ook selectief: niet elk detail is even relevant, en de bruikbare conclusie hangt af van de combinatie van bronnen. Daardoor lijkt dit domein geschikt voor een agent die informatie eerst verzamelt en vervolgens compact teruggeeft.
 
@@ -116,44 +116,67 @@ Dependency analyse past goed in dat profiel. Een update bestaat vaak niet uit ee
 
 In de literatuur over agentarchitecturen keren telkens dezelfde bouwstenen terug: een taalmodel, tools, een vorm van orkestratie en een feedbacklus waarin eerdere resultaten worden meegenomen in volgende stappen \textcite{Kim2024,Zhu2025}. Tools laten een agent toe om externe bronnen op te vragen of acties uit te voeren, terwijl orkestratie bepaalt in welke volgorde die stappen gebeuren. Feedbackloops maken het mogelijk om nieuwe informatie opnieuw te integreren wanneer de eerste bron onvoldoende blijkt.
 
-Voor het type probleem dat in deze bachelorproef centraal staat, is dat relevant omdat dependencyinformatie vaak niet volledig in een bron zit. een agent moet daarom kunnen beginnen bij een primaire bron en indien nodig overschakelen naar aanvullende context. De literatuur ondersteunt zo het idee dat agentgedrag niet noodzakelijk draait om autonomie als doel op zich, maar om gecontroleerde iteratie in informatieverzameling en interpretatie.
+Voor het type probleem dat in deze bachelorproef centraal staat, is dat relevant omdat dependencyinformatie vaak niet volledig in een bron zit. Een agent moet daarom kunnen beginnen bij een primaire bron en indien nodig overschakelen naar aanvullende context. De literatuur ondersteunt zo het idee dat agentgedrag niet noodzakelijk draait om autonomie als doel op zich, maar om gecontroleerde iteratie in informatieverzameling en interpretatie.
 
 \subsection{Code gedreven versus low-code orkestratie}
 
-De manier waarop zulke agentische processen worden georganiseerd, verschilt sterk tussen code gedreven en low-code benaderingen. Code gedreven systemen bieden doorgaans meer controle over de volgorde van stappen, de dataflow en de fouthandeling, terwijl low-code platforms nadruk leggen op visuele samenstelling, sneller configuratie en toegankelijkheid voor een breder profiel van gebruiks \textcite{Wali2025}. Beide benaderingen kunnen nuttig zijn, maar ze leggen andere accenten in termen van flexibiliteit, transparantie en onderhoudbaarheid.
+De manier waarop zulke agentische processen worden georganiseerd, verschilt sterk tussen code gedreven en low-code benaderingen. Code gedreven systemen bieden doorgaans meer controle over de volgorde van stappen, de dataflow en de fouthandeling, terwijl low-code platformen nadruk leggen op visuele samenstelling, sneller configuratie en toegankelijkheid voor een breder profiel van gebruiks \textcite{Wali2025}. Beide benaderingen kunnen nuttig zijn, maar ze leggen andere accenten in termen van flexibiliteit, transparantie en onderhoudbaarheid.
 
 Voor dependencybeheer is dat onderscheid relevant omdat de taak enerzijds voldoende gestructureerd is om in een workflow te vatten, maar anderzijds genoeg nuance bevat om baat te hebben bij expliciete controle over toolgebruik en bronselectie. De literatuur suggereert dus niet een enige juiste aanpak, maar wel dat de keuze tussen een code gedreven of low-code orkestratie mee bepaald wordt door de gewenste balans tussen controle en snelheid.
 
 \subsection{Tavily als zoek- en extractielaag}
 
-Naast workflowtools en agentframeworks bestaan ook een categorie bouwstenen die specifiek focust op het ophalen en voorbereiden van externe webinformatie voor AI-toepassingen. Tavily is een dergelijke zoekdienst die is ontworpen voor AI-agents en RAG-workflows, en biedt onder meer een web search API, een extractie-API en mogelijkheden voor site crawling en domeinfiltering \textcite{TavilyDocs2026,TavilyIntro2026}. In tegenstelling tot een klassieke zoekmachine levert Tavily resultaten in een vorm die beter bruikbaar is voor taalmodellen, met relevante titels, URL's, samenvattingen en scores die het model helpen om de meest geschikte bronnen sneller te selecteren \textcite{TavilyDocs2026,TavilyAI2026}.
+Naaste workflowtools en agentframeworks bestaan ook bouwstenen die specifiek gericht zijn op het ophalen en voorbereiden van externe webinformatie voor AI-toepassingen. Tavily is een zoekdienst die ontworpen is voor AI-agents en RAG-workflows en biedt onder meer een web search API, een extractie-API en mogelijkheden voor site crawling en domeinfiltering \textcite{TavilyDocs2026,TavilyIntro2026}. In deze bachelorproef is Tavily relevant omdat de tool niet enkel zoekresultaten teruggeeft, maar deze ook structuureert op een manier die beter aansluit bij gebruik door taalmodellen, bijvoorbeeld via titels, URL's, samenvattingen en scoringsinformatie \textcite{TavilyDocs2026,TavilyAI2026}.
 
-Voor toepassingen zoals dependency-analyse is dat interessant omdat release notes, migratiegidsen en changelogs niet altijd rechtstreeks beschikbaar zijn via gestructureerde registries. In zulke gevallen kan een zoeklaag zoals Tavily helpen om recente en contextuele informatie op te halen uit officiële documentatie of andere relevante webbronnen. De tool ondersteunt bovendien filters op domein en inhoud, waardoor zoekresultaten gerichter kunnen worden samengesteld en de kans kleiner wordt dat irrelevante of verouderde informatie in de analyse terechtkomt \textcite{TavilyBestPractices2026,TavilyDocs2026}. Daardoor vormt Tavily een nuttige schakel wanneer een agent of workflow verder moet zoeken dan de primaire package-metadata of repository-informatie.
+De keuze voor Tavily wordt vooral ingegeven door vier criteria. Ten eerste sluit de tool goed aan bij het beoogde gebruik in een AI-gestuurde analyseketen, omdat ze expliciet ontworpen is voor agentische zoekscenario's en daardoor beter past dan een algemene zoekmachine. Ten tweede ondersteunt Tavily gerichte filtering op domein en inhoud, wat belangrijk is om  officiële documentatie, release notes en changelogs te prioriteren boven minder betrouwbare bronnen \textcite{TavilyBestPractices2026,TavilyDocs2026}. Ten derde levert de tool output die rechtstreeks bruikbaar is voor verdere tekstverwerking, waardoor minder nabewerking nodig is dan bij klassieke zoekresultaten. Ten vierde past de tool binnen een workflow waarin actuele informatie snel moet worden opgehaald zonder dat de agent zelf uitgebreide scraping- of extractielogica moet bevatten.
 
-Binnen een geautomatiseerde analyseketen kan Tavily dus functioneren als aanvullende informatiebron tussen de ruwe dependencygegevens en de uiteindelijke AI-samenvatting. De literatuur en documentatie suggereren dat dit type zoekdienst vooral waardevol is wanneer het systeem actuele, brongebonden informatie nodig heeft die nog niet in de primaire databron aanwezig is \textcite{TavilySearch2026,TavilyIntro2026}. In die zin vult Tavily de kloof tussen eenvoudig metadata-opvraging en diepere tekstuele interpretatie van online bronnen.
+Voor toepassingen zoals dependency-analyse is dat relevant omdat release notes, migratiegidsen en changelogs niet altijd rechtstreeks beschikbaar zijn via gestructureerde registries. In zulke gevallen kan een zoeklaag zoals Tavily helpen om recente en contextuele informatie op te halen uit officiële documentatie of andere relevante webbronnen. De tool ondersteunt bovendien een meer gecontroleerde bronselectie dan een generieke zoekmachine, waardoor de kans kleiner wordt dat irrelevante of verouderde informatie in de analyse terechtkomt \textcite{TavilyBestPractices2026,TavilyDocs2026}. Daardoor vormt Tavily een nuttige schakel wanneer een agent of workflow verder moet zoeken dan de primaire package-metadata of repository-informatie.
+
+Binnen een geautomatiseerde analyseketen kan Tavily dus fuctioneren als aanvullende informatiebron tussen de ruwe dependencygegevens en de uiteindelijke AI-samenvatting. In vergelijking met alternatieven zoals een klassieke zoekmachine of zelf opgebouwde scrapinglogica biedt Tavily in deze context vooral meer doelgerichtheid, betere structuur van de output en minder implementatiecomplexiteit. De literatuur en documentatie suggereren daarom dat dit type zoekdienst vooral waardevol is wanneer het systeem actuele, brongebonden informatie nodig heeft die nog niet in de primaire databron aanwezig is \textcite{TavilySearch2026,TavilyIntro2026}. In die zin vult Tavily de kloof tussen eenvoudige metadata-opvraging en diepere tekstuele interpretatie van online bronnen.
 
 \section{Platformen en ontwerpkeuzes}
 \label{sec:platformen-keuzes}
 
-Op basis van de literatuur is het duidelijk dat AI-agenten technisch op verschillende manieren kunnen worden opgebouwd. De concrete platformkeuze hangt daarbij af van het gewenste niveau van controle, integratiegemak en flexibiliteit. Sommige benaderingen leggen de nadruk op een softwareframework rond agenten, andere op visuele workflowautomatisering en nog andere op directe API-gestuurde configuratie.
+Binnen de literatuur rond AI-agents en workflowautomatisering komen verschillende platformcategorieën naar voren die elk een andere balans bieden tussen controle, ontwikkelsnelheid en integratiegemak. Voor deze bachelorproef zijn drie categorieën relevant: code-gedreven agentframeworks, low-code workflowtools en API-gestuurde agentconfiguraties. Binnen die categorieën worden onder meer Mastra AI, n8n en de agent- en toolgebaseerde configutatiemogelijkheden van grote taalmodelplatformen als representatieve opties besproken \cite{MastraGithub,MastraTutorial,MastraObservability,N8nDocs,N8nGuide,N8nWorkOS,OpenAIFunctionCalling,OpenAIToolsDocs,OpenAIAgentsDocs}.
+
+De keuze om deze platformcateforieën eerst breed te schetsen is belangrijk omdat zij elk een andere ontwerpfilosofie vertegenwoordigen. Code-gedreven frameworks bieden maximale controle en uitbreidbaarheid, workflowtools focussen op visuele orkestratie en snelle integratie, en API-gestuurde configuraties laten toe om agentgedrag direct te sturen vanuit een model- en toolset. Door deze categorieën naast elkaar te plaatsen, wordt duidelijk welke afwegingen spelen bij de selectie van een geschikte aanpak voor dependencybeheer.
+
+\subsection{Overzicht van platformcategorieën}
+
+Tabel~\ref{tab:platformcategorieen} geeft een beknopt overzicht van de voornaamste platformcategorieën, hun kenmerken en representatieve voorbeelden. Dit overzicht vormt de basis voor de latere vergelijking en onderbouwing van de uiteindelijke platformkeuze.
+
+\begin{table}[h]
+\centering
+\caption{Overzicht van platformcategorieën voor AI-agenten}
+\label{tab:platformcategorieen}
+\begin{tabular}{p{3.2cm} p{5.2cm} p{5.2cm}}
+\hline
+\textbf{Categorie} & \textbf{Kenmerken} & \textbf{Voorbeelden} \\
+\hline
+Code-gedreven frameworks & Hoge controle over agentlogica, tools en integratie; geschikt voor uitbreidbare en technisch nauwkeurige implementaties. & Mastra AI \\
+Low-code workflowtools & Visuele orkestratie van triggers, databronnen en verwerkingsstappen; sterk in snelle integratie en procesautomatisering. & n8n \\
+API-gestuurde configuraties & Directe aansturing via model, instructies en tool/function calling; compact en flexibel voor gecontroleerde agentflows. & OpenAI Agent Builder, function calling, tool calling \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection{Code-gedreven frameworks}
 
-Code-gedreven frameworks zijn interessant wanneer de ontwikkelaar maximale controle wil over de agentlogica, de tools en de integratie met een bestaande codebase. De literatuur rond agentframeworks benadrukt dat zulke systemen vooral waardevol zijn wanneer uitbreidbaarheid belangrijk is \textcite{MastraGithub,MastraTutorial,MastraObservability}. Hun sterkte ligt in technische precisie en in de mogelijkheid om stappen, tools en antwoorden nauwkeurig te structureren.
+Code-gedreven frameworks zoals Mastra AI zijn interessant wanneer de ontwikkelaar maximale controle wil over de agentlogica, de tools en de integratie met een bestaande codebase. De literatuur rond agentframeworks benadrukt dat zulke systemen vooral waardevol zijn wanneer uitbreidbaarheid belangrijk is \textcite{MastraGithub,MastraTutorial,MastraObservability}. Hun sterkte ligt in technische precisie en in de mogelijkheid om stappen, tools en antwoorden nauwkeurig te structureren.
 
-Dat maakt dit type platform aantrekkelijk voor taken waarbij de kwaliteit van de output niet alleen afhangt van het taalmodel, maar ook van de manier waarop inputbronnen worden gekozen en gecombineerd. Voor dependencybeheer is dat relevant omdat updates vaak inhoudelijk moeten worden samengevat zonder essentiële details te verliezen. Code-gedreven benaderingen bieden in dat geval de mogelijkheid om de intermeiaire stappen expliciet te modelleren.
+Dat maakt dit type platform aantrekkelijk voor taken waarbij de kwaliteit van de output niet alleen afhangt van het taalmodel, maar ook van de manier waarop inputbronnen worden gekozen en gecombineerd. Voor dependencybeheer is dat relevant omdat updates inhoudelijk moeten worden samengevat zonder essentieële details te verliezen. Code-gedreven benaderingen bieden in dat geval de mogelijkheid om de tussenstappen expliciet te modelleren.
 
 \subsection{Low-code workflowtools}
 
-Low-code workflowtools zoals n8n richten zich op het visueel verbinden van databronnen, triggers en verwerkingstappen. De literatuur benadrukt dat zulke tools vooral goed passen bij repetitieve, event gedreven processen waarin externe systemen aan elkaar moeten worden gekoppeld \textcite{N8nDocs,N8nGuide,N8nWorkOS}. Hun waarde ligt minder in diepgaande programmatische controle en meer in snelle samenstelling en duidelijke visualisatie van de processtroom.
+Low-code workflowtools zoals n8n richten zich op het visueel verbinden van databronnen, triggers en verwerkingsstappen. De literatuur benadrukt dat zulke tools vooral goed passen bij repetitieve, eventgedreven processen waarin extrene systemen aan elkaar moeten worden gekoppeld \textcite{N8nDocs,N8nGuide,N8nWorkOS}. Hun waarde ligt minder in diepgaande programmatische controle en meer in snelle samenstelling en duidelijke visualisatie van de processtroom.
 
-Voor AI ondersteunde dependencyanalyse betekent dit dat low-code tools goed bruikbaar zijn wanneer de nadruk ligt op integratie en automatisering van bestaande stappen. Ze maken het eenvoudiger om informatie uit verschillende bronnen samen te brengen en door te geven aan een model, maar bieden minder nuance dan een volledige code gedreven aanpak wanneer de logica complexer wordt. De literatuur toont daarmee aan dat low-code vooral sterk is in orchestration, maar niet noodzakelijk in fijnmazige agentcontrole.
+Voor AI-ondersteunde dependencyanalyse betekent dit dat low-code tools goed bruikbaar zijn wanneer de nadruk ligt op integratie en automatisering van bestaande stappen. Ze maken het eenvoudiger om informatie uit verschillende bronnen samen te brengen en door te geven aan een model, maar bieden minder nuance dan een volledige code-gedreven aanpak wanneer de logica complexer wordt. De literatuur toont daarmee aan dat low-code vooral sterk is in orkestratie, maar niet noodzakelijk in nauwkeurige agentcontrole.
 
 \subsection{API-gestuurde agentconfiguratie}
 
 Een derde optie is een meer directe, API-gestuurde aanpak waarbij een taalmodel via function calling of tool calling zelf stappen kan initiëren binnen een gecontroleerde loop \textcite{OpenAIFunctionCalling,OpenAIToolsDocs,OpenAIAgentsDocs}. In die benadering wordt de agent niet noodzakelijk ingebed in een zwaar framework, maar geconfigureerd via een model, instructies en expliciet gedefinieerde tools. Dat levert een compacte maar krachtige manier op om iteratieve informatieverwerking te organiseren.
 
-Deze aanpak is vooral interessant wanneer de ontwikkelaar de agentflow nauw wil afstemmen op de taak, maar geen extra orkestratielaag wil toevoegen die de controle overneemt. De literatuur wijst erop dat dergelijke API-gestuurde agentconfiguraties nuttig zijn voor taken waarin modellen meerdere tools achtereen moeten kunnen aanroepen en de resultaten daarvan in een gestructureerde output moeten samenbrengen \textcite{OpenAIFunctionCalling,OpenAIToolsDocs}. Daardoor vormen ze een relevante ontwerpoptie binnen het bredere landschap van AI automatisering.
+Deze aanpak is vooral interessant wanneer de ontwikkelaar de agentflow nauw wil afstemmen op de taak, maar geen extra orkestratielaag wil toevoegen die de controle overneemt. De literatuur wijst erop dat dergelijke API-gestuurde agentconfiguraties nuttig zijn voor taken waarin modellen meerdere tools achter elkaar moeten kunnen aanroepen en de resultaten daarvan in een gestructureerde output moeten samenbrengen \textcite{OpenAIFunctionCalling,OpenAIToolsDocs}. Daardoor vormen ze een relevante ontwerpoptie binnen het bredere landschap van AI-automatisering.
 
 \section{Synthese: de onderzoeksniche}
 \label{sec: onderzoeksniche}
