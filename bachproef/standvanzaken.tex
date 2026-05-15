@@ -85,7 +85,7 @@ Momenteel bestaan er reeds meerdere vormen van ondersteuning voor dependencybehe
 
 \subsection{Dependencybots: wat ze wel en niet doen}
 
-Dependencybots zoals Dependabot zijn nuttig omdat ze repetitieve en goed afgebakende taken automatiseren. Ze signaleren nieuwe versies, openen pull requests en zorgen ervoor dat updates niet volledig over het hoofd worden gezien. In die zin vormen ze een belangrijke stap in het verlagen van de operationele last rond afhankelijkheden, vooral omdat ze een groot deel van het handmatige opvolgwerk uit handen nemen.
+Dependencybots zoals Dependabot zijn nuttig omdat ze repetitieve en goed afgebakende taken automatiseren. Ze signaleren nieuwe versies, openen pull requests en zorgen ervoor dat updates niet volledig over het hoofd worden gezien \textcite{Hassan2023}. In die zin vormen ze een belangrijke stap in het verlagen van de operationele last rond afhankelijkheden, vooral omdat ze een groot deel van het handmatige opvolgwerk uit handen nemen \textcite{Hassan2023}.
 
 Tegelijk blijven deze bots beperkt in hun inhoudelijke bijdrage. Ze kunnen doorgaans aantonen dat er een update is, maar niet overtuigend uitleggen dat de implicaties ervan zijn. Voor ontwikkelaars blijft het dus nodig om changelogs, release notes en migratie-informatie zelf door te nemen om te bepalen of een update veilg, dringend of complex is. De literatuur suggereert daarmee dat automation op zichzelf niet volstaat wanneer de resterende taak vooral bestaat uit interpretatie en besluitvorming \textcite{Erlenhov2022}.
 
@@ -106,7 +106,7 @@ Dat maakt private ecosystemen extra relevant voor onderzoek naar dependencybehee
 
 Wanneer de informatie over updates te verspreid of te contextafhankelijk wordt voor eenvoudige automatisering, komen AI-agents en workflow automatisering in beeld. Die technologieën zijn vooral interessant wanneer een taak bestaat uit meerdere stappen, waarbij informatie uit verschillende bronnen moet worden gecombineerd, geïnterpreteerd en teruggekoppeld naar een gebruiker of systeem \textcite{Joshi2025,Kim2024,Zhu2025}. In dat opzicht sluiten dependency updates goed aan bij het soort probleem waarvoor agentgebaseerde systemen ontworpen worden.
 
-\subsection{Wat maakt een taak geschikt voor een AI-agent}
+\subsection{Geschiktheid van een taak voor een AI-agent}
 
 AI-agents zijn vooral nuttig in situaties waar een systeem die geen vaste handeling moet uitvoeren, maar iteratief informatie moet verzamelen, analyseren en samenvatten. Uit het onderzoek van \textcite{Joshi2025,Zhu2025} blijkt dat agents bijzonder geschikt zijn voor taken met gestructureerde input, tekstuele context en meerdere beslismomenten. Dat maakt ze relevant voor softwarecontexten waarin logs, release notes, notificaties of documentatie samen moeten worden geïnterpreteerd.
 
@@ -120,13 +120,13 @@ Voor het type probleem dat in deze bachelorproef centraal staat, is dat relevant
 
 \subsection{Code gedreven versus low-code orkestratie}
 
-De manier waarop zulke agentische processen worden georganiseerd, verschilt sterk tussen code gedreven en low-code benaderingen. Code gedreven systemen bieden doorgaans meer controle over de volgorde van stappen, de dataflow en de fouthandeling, terwijl low-code platformen nadruk leggen op visuele samenstelling, sneller configuratie en toegankelijkheid voor een breder profiel van gebruiks \textcite{Wali2025}. Beide benaderingen kunnen nuttig zijn, maar ze leggen andere accenten in termen van flexibiliteit, transparantie en onderhoudbaarheid.
+De manier waarop zulke agentische processen worden georganiseerd, verschilt sterk tussen code gedreven en low-code benaderingen. Code gedreven systemen bieden doorgaans meer controle over de volgorde van stappen, de dataflow en de fouthandeling, terwijl low-code platformen nadruk leggen op visuele samenstelling, sneller configuratie en toegankelijkheid voor een breder profiel van gebruikers \textcite{Wali2025}. Beide benaderingen kunnen nuttig zijn, maar ze leggen andere accenten in termen van flexibiliteit, transparantie en onderhoudbaarheid.
 
 Voor dependencybeheer is dat onderscheid relevant omdat de taak enerzijds voldoende gestructureerd is om in een workflow te vatten, maar anderzijds genoeg nuance bevat om baat te hebben bij expliciete controle over toolgebruik en bronselectie. De literatuur suggereert dus niet een enige juiste aanpak, maar wel dat de keuze tussen een code gedreven of low-code orkestratie mee bepaald wordt door de gewenste balans tussen controle en snelheid.
 
 \subsection{Tavily als zoek- en extractielaag}
 
-Naaste workflowtools en agentframeworks bestaan ook bouwstenen die specifiek gericht zijn op het ophalen en voorbereiden van externe webinformatie voor AI-toepassingen. Tavily is een zoekdienst die ontworpen is voor AI-agents en RAG-workflows en biedt onder meer een web search API, een extractie-API en mogelijkheden voor site crawling en domeinfiltering \textcite{TavilyDocs2026,TavilyIntro2026}. In deze bachelorproef is Tavily relevant omdat de tool niet enkel zoekresultaten teruggeeft, maar deze ook structuureert op een manier die beter aansluit bij gebruik door taalmodellen, bijvoorbeeld via titels, URL's, samenvattingen en scoringsinformatie \textcite{TavilyDocs2026,TavilyAI2026}.
+Naast de workflowtools en agentframeworks bestaan ook bouwstenen die specifiek gericht zijn op het ophalen en voorbereiden van externe webinformatie voor AI-toepassingen. Tavily is een zoekdienst die ontworpen is voor AI-agents en RAG-workflows en biedt onder meer een web search API, een extractie-API en mogelijkheden voor site crawling en domeinfiltering \textcite{TavilyDocs2026,TavilyIntro2026}. In deze bachelorproef is Tavily relevant omdat de tool niet enkel zoekresultaten teruggeeft, maar deze ook structuureert op een manier die beter aansluit bij gebruik door taalmodellen, bijvoorbeeld via titels, URL's, samenvattingen en scoringsinformatie \textcite{TavilyDocs2026,TavilyAI2026}.
 
 De keuze voor Tavily wordt vooral ingegeven door vier criteria. Ten eerste sluit de tool goed aan bij het beoogde gebruik in een AI-gestuurde analyseketen, omdat ze expliciet ontworpen is voor agentische zoekscenario's en daardoor beter past dan een algemene zoekmachine. Ten tweede ondersteunt Tavily gerichte filtering op domein en inhoud, wat belangrijk is om  officiële documentatie, release notes en changelogs te prioriteren boven minder betrouwbare bronnen \textcite{TavilyBestPractices2026,TavilyDocs2026}. Ten derde levert de tool output die rechtstreeks bruikbaar is voor verdere tekstverwerking, waardoor minder nabewerking nodig is dan bij klassieke zoekresultaten. Ten vierde past de tool binnen een workflow waarin actuele informatie snel moet worden opgehaald zonder dat de agent zelf uitgebreide scraping- of extractielogica moet bevatten.
 
@@ -137,17 +137,35 @@ Binnen een geautomatiseerde analyseketen kan Tavily dus fuctioneren als aanvulle
 \section{Platformen en ontwerpkeuzes}
 \label{sec:platformen-keuzes}
 
-Binnen de literatuur rond AI-agents en workflowautomatisering komen verschillende platformcategorieën naar voren die elk een andere balans bieden tussen controle, ontwikkelsnelheid en integratiegemak. Voor deze bachelorproef zijn drie categorieën relevant: code-gedreven agentframeworks, low-code workflowtools en API-gestuurde agentconfiguraties. Binnen die categorieën worden onder meer Mastra AI, n8n en de agent- en toolgebaseerde configutatiemogelijkheden van grote taalmodelplatformen als representatieve opties besproken \cite{MastraGithub,MastraTutorial,MastraObservability,N8nDocs,N8nGuide,N8nWorkOS,OpenAIFunctionCalling,OpenAIToolsDocs,OpenAIAgentsDocs}.
+Binnen die categorieën worden onder meer Mastra AI, n8n en de agent- en toolgebaseerde configuratiemogelijkheden van grote taalmodelplatformen als representatieve opties besproken\footnote{Zie de officiële documentatie en platformpagina's van Mastra (\url{https://github.com/mastra-ai/mastra}, \url{https://mastra.ai/docs/observability/overview}), n8n (\url{https://docs.n8n.io}) en OpenAI (\url{https://developers.openai.com/api/docs/guides/function-calling}, \url{https://developers.openai.com/api/docs/guides/tools}, \url{https://developers.openai.com/api/docs/guides/agents}).}
 
 De keuze om deze platformcateforieën eerst breed te schetsen is belangrijk omdat zij elk een andere ontwerpfilosofie vertegenwoordigen. Code-gedreven frameworks bieden maximale controle en uitbreidbaarheid, workflowtools focussen op visuele orkestratie en snelle integratie, en API-gestuurde configuraties laten toe om agentgedrag direct te sturen vanuit een model- en toolset. Door deze categorieën naast elkaar te plaatsen, wordt duidelijk welke afwegingen spelen bij de selectie van een geschikte aanpak voor dependencybeheer.
 
-\subsection{Overzicht van platformcategorieën}
+\subsection{Code-gedreven frameworks}
 
-Tabel~\ref{tab:platformcategorieen} geeft een beknopt overzicht van de voornaamste platformcategorieën, hun kenmerken en representatieve voorbeelden. Dit overzicht vormt de basis voor de latere vergelijking en onderbouwing van de uiteindelijke platformkeuze.
+Code-gedreven frameworks zoals Mastra AI zijn interessant wanneer de ontwikkelaar maximale controle wil over de agentlogica, de tools en de integratie met een bestaande codebase. De literatuur rond agentframeworks benadrukt dat zulke systemen vooral waardevol zijn wanneer uitbreidbaarheid belangrijk is \textcite{MastraGithub,MastraTutorial,MastraObservability}. Hun sterkte ligt in technische precisie en in de mogelijkheid om stappen, tools en antwoorden nauwkeurig te structureren.
+
+Dat maakt dit type platform aantrekkelijk voor taken waarbij de kwaliteit van de output niet alleen afhangt van het taalmodel, maar ook van de manier waarop inputbronnen worden gekozen en gecombineerd. Voor dependencybeheer is dat relevant omdat updates inhoudelijk moeten worden samengevat zonder essentieële details te verliezen. Code-gedreven benaderingen bieden in dat geval de mogelijkheid om de tussenstappen expliciet te modelleren.
+
+\subsection{Low-code workflowtools}
+
+Low-code workflowtools zoals n8n richten zich op het visueel verbinden van databronnen, triggers en verwerkingsstappen. De literatuur benadrukt dat zulke tools vooral goed passen bij repetitieve, eventgedreven processen waarin extrene systemen aan elkaar moeten worden gekoppeld \textcite{N8nDocs,N8nGuide,N8nWorkOS}. Hun waarde ligt minder in diepgaande programmatische controle en meer in snelle samenstelling en duidelijke visualisatie van de processtroom.
+
+Voor AI-ondersteunde dependencyanalyse betekent dit dat low-code tools goed bruikbaar zijn wanneer de nadruk ligt op integratie en automatisering van bestaande stappen. Ze maken het eenvoudiger om informatie uit verschillende bronnen samen te brengen en door te geven aan een model, maar bieden minder nuance dan een volledige code-gedreven aanpak wanneer de logica complexer wordt. De literatuur toont daarmee aan dat low-code vooral sterk is in orkestratie, maar niet noodzakelijk in nauwkeurige agentcontrole.
+
+\subsection{API-gestuurde agentconfiguratie}
+
+Een derde optie is een meer directe, API-gestuurde aanpak waarbij een taalmodel via function calling of tool calling zelf stappen kan initiëren binnen een gecontroleerde loop \textcite{OpenAIFunctionCalling,OpenAIToolsDocs,OpenAIAgentsDocs}. In die benadering wordt de agent niet noodzakelijk ingebed in een zwaar framework, maar geconfigureerd via een model, instructies en expliciet gedefinieerde tools. Dat levert een compacte maar krachtige manier op om iteratieve informatieverwerking te organiseren.
+
+Deze aanpak is vooral interessant wanneer de ontwikkelaar de agentflow nauw wil afstemmen op de taak, maar geen extra orkestratielaag wil toevoegen die de controle overneemt. De literatuur wijst erop dat dergelijke API-gestuurde agentconfiguraties nuttig zijn voor taken waarin modellen meerdere tools achter elkaar moeten kunnen aanroepen en de resultaten daarvan in een gestructureerde output moeten samenbrengen \textcite{OpenAIFunctionCalling,OpenAIToolsDocs}. Daardoor vormen ze een relevante ontwerpoptie binnen het bredere landschap van AI-automatisering.
+
+\subsection{Vergelijkend overzicht van platformcategorieën}
+
+Tabel~\ref{tab:platformcategorieen} vat de besproken platformcategorieën samen aan de hand van hun voornaamste kenmerken en representatieve voorbeelden. Dit overzicht onderbouwt de uiteindelijke platformkeuze die in de volgende sectie wordt toegelicht.
 
 \begin{table}[h]
 \centering
-\caption{Overzicht van platformcategorieën voor AI-agenten}
+\caption{Vergelijkend overzicht van platformcategorieën voor AI-agenten (gebaseerd op \cite{turing2026frameworks, nair2025agentic, langflow2025guide, anthropic_tool_use, openai_agents_sdk})}
 \label{tab:platformcategorieen}
 \begin{tabular}{p{3.2cm} p{5.2cm} p{5.2cm}}
 \hline
@@ -167,24 +185,6 @@ OpenAI Agent Builder, OpenAI Agents SDK, Anthropic Tool Use, Google ADK, Functio
 \hline
 \end{tabular}
 \end{table}
-
-\subsection{Code-gedreven frameworks}
-
-Code-gedreven frameworks zoals Mastra AI zijn interessant wanneer de ontwikkelaar maximale controle wil over de agentlogica, de tools en de integratie met een bestaande codebase. De literatuur rond agentframeworks benadrukt dat zulke systemen vooral waardevol zijn wanneer uitbreidbaarheid belangrijk is \textcite{MastraGithub,MastraTutorial,MastraObservability}. Hun sterkte ligt in technische precisie en in de mogelijkheid om stappen, tools en antwoorden nauwkeurig te structureren.
-
-Dat maakt dit type platform aantrekkelijk voor taken waarbij de kwaliteit van de output niet alleen afhangt van het taalmodel, maar ook van de manier waarop inputbronnen worden gekozen en gecombineerd. Voor dependencybeheer is dat relevant omdat updates inhoudelijk moeten worden samengevat zonder essentieële details te verliezen. Code-gedreven benaderingen bieden in dat geval de mogelijkheid om de tussenstappen expliciet te modelleren.
-
-\subsection{Low-code workflowtools}
-
-Low-code workflowtools zoals n8n richten zich op het visueel verbinden van databronnen, triggers en verwerkingsstappen. De literatuur benadrukt dat zulke tools vooral goed passen bij repetitieve, eventgedreven processen waarin extrene systemen aan elkaar moeten worden gekoppeld \textcite{N8nDocs,N8nGuide,N8nWorkOS}. Hun waarde ligt minder in diepgaande programmatische controle en meer in snelle samenstelling en duidelijke visualisatie van de processtroom.
-
-Voor AI-ondersteunde dependencyanalyse betekent dit dat low-code tools goed bruikbaar zijn wanneer de nadruk ligt op integratie en automatisering van bestaande stappen. Ze maken het eenvoudiger om informatie uit verschillende bronnen samen te brengen en door te geven aan een model, maar bieden minder nuance dan een volledige code-gedreven aanpak wanneer de logica complexer wordt. De literatuur toont daarmee aan dat low-code vooral sterk is in orkestratie, maar niet noodzakelijk in nauwkeurige agentcontrole.
-
-\subsection{API-gestuurde agentconfiguratie}
-
-Een derde optie is een meer directe, API-gestuurde aanpak waarbij een taalmodel via function calling of tool calling zelf stappen kan initiëren binnen een gecontroleerde loop \textcite{OpenAIFunctionCalling,OpenAIToolsDocs,OpenAIAgentsDocs}. In die benadering wordt de agent niet noodzakelijk ingebed in een zwaar framework, maar geconfigureerd via een model, instructies en expliciet gedefinieerde tools. Dat levert een compacte maar krachtige manier op om iteratieve informatieverwerking te organiseren.
-
-Deze aanpak is vooral interessant wanneer de ontwikkelaar de agentflow nauw wil afstemmen op de taak, maar geen extra orkestratielaag wil toevoegen die de controle overneemt. De literatuur wijst erop dat dergelijke API-gestuurde agentconfiguraties nuttig zijn voor taken waarin modellen meerdere tools achter elkaar moeten kunnen aanroepen en de resultaten daarvan in een gestructureerde output moeten samenbrengen \textcite{OpenAIFunctionCalling,OpenAIToolsDocs}. Daardoor vormen ze een relevante ontwerpoptie binnen het bredere landschap van AI-automatisering.
 
 \section{Synthese: de onderzoeksniche}
 \label{sec: onderzoeksniche}
