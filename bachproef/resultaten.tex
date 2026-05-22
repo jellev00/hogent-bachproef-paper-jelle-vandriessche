@@ -26,6 +26,8 @@ In deze benchmark is het judge-model \texttt{gpt-4o-mini} geconfigureerd met een
     \item \textbf{Feitendekking} (15\,\% gewicht): meet hoeveel van de vooraf gedefinieerde verwachte feiten (\textit{expected facts}) de agent correct en volledig vermeldt. Hiermee wordt de output getoetst aan de grondwaarheid uit de officiële changelog.
 \end{enumerate}
 
+De \textit{LLM-as-a-Judge} kent deze scores toe door de gegenereerde output semantisch te vergelijken met de verwachte inhoud per testcase. Daarbij wordt nagegaan in welke mate de agent concrete versie-informatie vermeldt, relevante wijzigingen correct samenvat, alle verwachte inhoudelijke onderdelen opneemt en feiten uit de officiële changelog correct weergeeft. De beoordeling is dus niet gebaseerd op eenvoudige trefwoorddetectie, maar op de vraag of de output inhoudelijk overeenkomt met wat een developer op basis van de changelog zou moeten weten.
+
 De totale score per run wordt berekend als gewogen gemiddelde:
 
 \begin{equation}
