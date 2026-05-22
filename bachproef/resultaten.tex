@@ -10,14 +10,14 @@ Dit hoofdstuk bespreekt de resultaten van de uitgevoerde evaluatie van de drie A
 \section{Evaluatiekader}
 \label{sec:evaluatiekader}
 
-Vooraleer de resultaten worden besproken, wordt in deze sectie toegelicht hoe de evaluatie is opgezet. Eerst wordt de gebruikte scoremethode -- \textit{LLM-as-a-Judge} -- beschreven, inclusief de beoordelingsdimensies, gewichten en scoringsformules. Daarna worden de vijf testcases geïntroduceerd en gemotiveerd, met per testcase een overzicht van de verwachte output op basis van de officiële changelog.
+Vooraleer de resultaten worden besproken, wordt in deze sectie toegelicht hoe de evaluatie is opgezet. Eerst wordt de gebruikte scoremethode \textit{LLM-as-a-Judge} beschreven, inclusief de beoordelingsdimensies, gewichten en scoringsformules. Daarna worden de vijf testcases geïntroduceerd en gemotiveerd, met per testcase een overzicht van de verwachte output op basis van de officiële changelog.
 
 \subsection{Scoremethode: LLM-as-a-Judge}
 \label{subsec:scoremethode}
 
 Om de output van de drie AI-agents op een consistente en herhaalbare manier te beoordelen, maakt de benchmark gebruik van de \textit{LLM-as-a-Judge}-aanpak. Bij deze evaluatiemethode treedt een tweede taalmodel op als rechter en beoordeelt de output van de agent semantisch, zonder te vertrekken van vaste regelsets of eenvoudige keyword-matching. De judge begrijpt de \textit{betekenis} van de output en vergelijkt die inhoudelijk met de verwachte kwaliteit en feiten. Dit is precies wat LLM-as-a-Judge onderscheidt van klassieke evaluatiemethodes.
 
-In deze benchmark is het judge-model \texttt{gpt-4o-mini}, geconfigureerd met een lage temperatuur (\texttt{temperature=0.1}) om consistente en herhaalbare oordelen te garanderen. Elke agent-output wordt beoordeeld op vier kwantitatieve dimensies (schaal 0--10) en twee kwalitatieve indicatoren:
+In deze benchmark is het judge-model \texttt{gpt-4o-mini} geconfigureerd met een lage temperatuur (\textit{temperature} = 0,1)\footnote{De temperatuurparameter is een instelbare waarde in taalmodellen die de mate van variatie in de gegenereerde output beïnvloedt. Een lagere waarde maakt de output minder willekeurig en dus beter reproduceerbaar.} om consistente en herhaalbare oordelen te garanderen. Elke agent-output wordt beoordeeld op vier kwantitatieve dimensies (schaal 0--10) en twee kwalitatieve indicatoren:
 
 \begin{enumerate}
     \item \textbf{Specificiteit} (30\,\% gewicht): meet of de analyse concrete, package-specifieke informatie bevat. Lage scores wijzen op vage of generieke tekst; hoge scores impliceren exacte API-namen, versienummers of codefragmenten.
@@ -26,7 +26,8 @@ In deze benchmark is het judge-model \texttt{gpt-4o-mini}, geconfigureerd met ee
     \item \textbf{Feitendekking} (15\,\% gewicht): meet hoeveel van de vooraf gedefinieerde verwachte feiten (\textit{expected facts}) de agent correct en volledig vermeldt. Hiermee wordt de output getoetst aan de grondwaarheid uit de officiële changelog.
 \end{enumerate}
 
-De overall score per run wordt berekend als gewogen gemiddelde:
+De totale score per run wordt berekend als gewogen gemiddelde:
+
 \begin{equation}
     \text{overall} = \text{actiegerichtheid} \times 0{,}40
                    + \text{specificiteit} \times 0{,}30
@@ -35,7 +36,7 @@ De overall score per run wordt berekend als gewogen gemiddelde:
     \label{eq:overallscore}
 \end{equation}
 
-Naast de vier dimensies detecteert de judge ook twee booleaanse indicatoren en een categorisch veiligheidsoordeel (\textit{Yes}, \textit{No}, \textit{With caution} of \textit{Not found}). Elk testgeval wordt driemaal uitgevoerd per agent, waarna de gerapporteerde scores de rekenkundige gemiddelden zijn over die drie runs. De consistentiescore meet de stabiliteit van een agent over deze herhalingen:
+Naast de vier kwantitatieve dimensies registreert de judge ook twee booleaanse indicatoren en een categorisch veiligheidsoordeel. De booleaanse indicatoren geven aan of de output een expliciete sectie over \textit{breaking changes} bevat en of concrete \textit{migration steps} aanwezig zijn. Daarmee wordt nagegaan of de agent niet alleen inhoudelijk relevante informatie vermeldt, maar die ook in een bruikbare, gestructureerde vorm presenteert. Het veiligheidsoordeel geeft vervolgens aan hoe de agent de update evalueert: \textit{Yes} betekent dat de update veilig lijkt, \textit{No} dat ze afgeraden wordt, \textit{With caution} dat voorzichtigheid vereist is, en \textit{Not found} dat geen expliciet oordeel werd gegeven. Elk testgeval wordt driemaal uitgevoerd per agent, waarna de gerapporteerde scores de rekenkundige gemiddelden zijn over die drie runs. De consistentiescore meet de stabiliteit van een agent over deze herhalingen:
 
 \begin{equation}
     \text{consistentie} = \max\bigl(0,\; 10 - \sigma_{\text{overall}} \times 2\bigr)
@@ -47,7 +48,7 @@ waarbij $\sigma_{\text{overall}}$ de standaardafwijking is van de overallscores.
 \subsection{Testcaseselectie en verwachte output}
 \label{subsec:testcases}
 
-De benchmark omvat vijf testcases die samen de volledige breedte van updatetypes -- \textit{patch}, \textit{minor} en \textit{major} -- dekken, verspreid over uiteenlopende packagecategorieën en risiconiveaus. De selectie is als volgt gemotiveerd:
+De benchmark omvat vijf testcases die samen de volledige breedte van updatetypes \textit{patch}, \textit{minor} en \textit{major} dekken, verspreid over uiteenlopende packagecategorieën en risiconiveaus. De selectie is als volgt gemotiveerd:
 
 \begin{itemize}
     \item \textbf{react minor (18.2.0 → 18.3.0):} React is een van de meest gebruikte frontend bibliotheken en een frequent terugkerende dependency in projecten zoals die van Springbok. Deze minor update voegt functioneel niets toe maar introduceert uitsluitend deprecatiewaarschuwingen voor React 19. Het is daarmee een \textit{edge case}: agents die de update simpelweg als ``veilig zonder bijzonderheden'' beschrijven missen essentiële informatie voor toekomstgericht onderhoud.
@@ -57,12 +58,10 @@ De benchmark omvat vijf testcases die samen de volledige breedte van updatetypes
     \item \textbf{tailwindcss minor (3.3.0 → 3.4.0):} Een minor update met uitgebreide nieuwe utilities (dynamische viewport-eenheden, \texttt{has-*}-variant, \texttt{size-*}-utilities, subgrid) die volledig backwards compatibel zijn. Agents worden getest op hun vermogen om een brede set nieuwe functies correct en volledig te rapporteren.
 \end{itemize}
 
-De vijf testcases bestrijken samen drie risiconiveaus (patch, minor, major), vijf packagedomeinen (UI-framework, meta-framework, typesysteem, validatiebibliotheek, CSS-framework) en twee bijzondere scenario's (deprecaties zonder breaking changes; patch zonder publieke notes). Tabel~\ref{tab:testcases} vat de details samen.
+De vijf testcases bestrijken samen drie risiconiveaus (patch, minor, major), vijf packagedomeinen (UI-framework, meta-framework, typesysteem, validatiebibliotheek, CSS-framework) en twee bijzondere scenario's (deprecation warnings zonder breaking changes; patch zonder publieke notes). Tabel~\ref{tab:testcases} vat de details samen.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
-    \caption{Overzicht van de gebruikte testcases met verwacht veiligheidsoordeel}
-    \label{tab:testcases}
     \begin{tabular}{llllp{5.5cm}}
         \hline
         \textbf{ID} & \textbf{Package} & \textbf{Versieovergang} & \textbf{Type} & \textbf{Verwacht oordeel \& kernpunten} \\
@@ -74,6 +73,8 @@ De vijf testcases bestrijken samen drie risiconiveaus (patch, minor, major), vij
         tailwind\_minor    & tailwindcss & 3.3.0 → 3.4.0   & minor & \textit{Yes} — uitgebreide nieuwe utilities, volledig compatibel \\
         \hline
     \end{tabular}
+    \caption{Overzicht van de gebruikte testcases met verwacht veiligheidsoordeel}
+    \label{tab:testcases}
 \end{table}
 
 \section{Globale resultaten}
@@ -81,19 +82,19 @@ De vijf testcases bestrijken samen drie risiconiveaus (patch, minor, major), vij
 
 De benchmark werd uitgevoerd op 17 mei 2026 en omvat in totaal 45 evaluaties: 5 testcases $\times$ 3 agents $\times$ 3 runs. Alle gerapporteerde scores zijn rekenkundige gemiddelden over de drie runs. Tabel~\ref{tab:benchmarkresultaten} vat de geaggregeerde resultaten samen per variant.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
-    \caption{Samenvatting van de benchmarkresultaten per AI-variant (gemiddelden over 5 testcases $\times$ 3 runs)}
-    \label{tab:benchmarkresultaten}
     \begin{tabular}{lccccc}
         \hline
         \textbf{Variant} & \textbf{Overall} & \textbf{Specificiteit} & \textbf{Volledigheid} & \textbf{Actiegerichtheid} & \textbf{Gem.\ latency} \\
         \hline
-        Mastra  & 7,81          & 7,27          & 8,20          & 8,27          & 10,94~s \\
-        OpenAI  & 6,53          & 5,60          & 8,00          & 7,27          & 4,34~s \\
-        n8n     & 6,04          & 4,67          & 6,67          & 7,47          & 8,07~s  \\
+        Mastra  & $7{,}81 \pm 1{,}24$ & $7{,}27 \pm 1{,}33$ & $8{,}20 \pm 0{,}56$ & $8{,}27 \pm 1{,}28$ & $10{,}94 \pm 3{,}08$~s \\
+        OpenAI  & $6{,}53 \pm 1{,}70$ & $5{,}60 \pm 1{,}64$ & $8{,}00 \pm 1{,}31$ & $7{,}27 \pm 1{,}71$ & $4{,}34 \pm 1{,}19$~s \\
+        n8n     & $6{,}04 \pm 1{,}59$ & $4{,}67 \pm 2{,}09$ & $6{,}67 \pm 1{,}23$ & $7{,}47 \pm 1{,}19$ & $8{,}07 \pm 2{,}72$~s  \\
         \hline
     \end{tabular}
+    \caption{Samenvatting van de benchmarkresultaten per AI-variant (gemiddelden $\pm\,\sigma$ over 5 testcases $\times$ 3 runs)}
+    \label{tab:benchmarkresultaten}
 \end{table}
 
 Figuur~\ref{fig:scores-per-testcase} toont de overallscores per testcase en per agent. Hieruit blijkt dat de drie varianten sterk uiteenlopen naargelang het type update, en dat geen enkele variant in alle testcases dominant is.
@@ -112,36 +113,40 @@ Figuur~\ref{fig:scores-per-testcase} toont de overallscores per testcase en per 
             symbolic x coords={react\_minor, nextjs\_minor, typescript\_major, zod\_patch, tailwind\_minor},
             xticklabel style={rotate=20, anchor=east, font=\small},
             legend style={at={(0.5,-0.28)}, anchor=north, legend columns=3},
-            nodes near coords,
-            nodes near coords style={font=\tiny},
-            every node near coord/.append style={rotate=90, anchor=west},
             enlarge x limits=0.15,
+            error bars/error bar style={line width=0.6pt},
+            nodes near coords,
+            nodes near coords style={font=\tiny, rotate=90, anchor=west, xshift=6pt},
+            every node near coord/.append style={/pgf/number format/.cd, fixed, precision=2},
         ]
-        \addplot coordinates {
-            (react\_minor, 8.25)
-            (nextjs\_minor, 6.22)
-            (typescript\_major, 6.65)
-            (zod\_patch, 9.07)
-            (tailwind\_minor, 8.85)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (react\_minor,      8.25) +- (0, 0.40)
+            (nextjs\_minor,     6.22) +- (0, 0.58)
+            (typescript\_major, 6.65) +- (0, 0.09)
+            (zod\_patch,        9.07) +- (0, 0.32)
+            (tailwind\_minor,   8.85) +- (0, 0.00)
         };
-        \addplot coordinates {
-            (react\_minor, 5.60)
-            (nextjs\_minor, 5.70)
-            (typescript\_major, 6.55)
-            (zod\_patch, 9.30)
-            (tailwind\_minor, 5.48)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (react\_minor,      5.60) +- (0, 1.95)
+            (nextjs\_minor,     5.70) +- (0, 0.00)
+            (typescript\_major, 6.55) +- (0, 0.00)
+            (zod\_patch,        9.30) +- (0, 0.09)
+            (tailwind\_minor,   5.48) +- (0, 0.94)
         };
-        \addplot coordinates {
-            (react\_minor, 5.05)
-            (nextjs\_minor, 4.70)
-            (typescript\_major, 5.63)
-            (zod\_patch, 8.78)
-            (tailwind\_minor, 6.02)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (react\_minor,      5.05) +- (0, 1.03)
+            (nextjs\_minor,     4.70) +- (0, 0.35)
+            (typescript\_major, 5.63) +- (0, 0.83)
+            (zod\_patch,        8.78) +- (0, 0.28)
+            (tailwind\_minor,   6.02) +- (0, 0.32)
         };
         \legend{Mastra, OpenAI, n8n}
         \end{axis}
     \end{tikzpicture}
-    \caption{Gemiddelde overallscores per testcase en per agent (gemiddeld over 3 runs)}
+    \caption[Overallscores per testcase]{Gemiddelde overallscores per testcase en per agent (gemiddeld over 3 runs; foutbalken = $\sigma$). De grafiek laat zien dat de prestaties sterk verschillen per update-type en dat geen enkele variant in alle testcases dominant is.}
     \label{fig:scores-per-testcase}
 \end{figure}
 \FloatBarrier
@@ -162,35 +167,40 @@ Figuur~\ref{fig:dimensies-per-agent} vergelijkt de gemiddelde scores per beoorde
             symbolic x coords={Overall, Specificiteit, Volledigheid, Actiegerichtheid, Consistentie},
             xticklabel style={rotate=15, anchor=east, font=\small},
             legend style={at={(0.5,-0.26)}, anchor=north, legend columns=3},
-            nodes near coords,
-            nodes near coords style={font=\tiny},
             enlarge x limits=0.15,
+            error bars/error bar style={line width=0.6pt},
+            nodes near coords,
+            nodes near coords style={font=\tiny, rotate=90, anchor=west, xshift=6pt},
+            every node near coord/.append style={/pgf/number format/.cd, fixed, precision=2},
         ]
-        \addplot coordinates {
-            (Overall, 7.81)
-            (Specificiteit, 7.27)
-            (Volledigheid, 8.20)
-            (Actiegerichtheid, 8.27)
-            (Consistentie, 7.53)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (Overall,          7.81) +- (0, 1.24)
+            (Specificiteit,    7.27) +- (0, 1.33)
+            (Volledigheid,     8.20) +- (0, 0.56)
+            (Actiegerichtheid, 8.27) +- (0, 1.28)
+            (Consistentie,     7.53) +- (0, 0)
         };
-        \addplot coordinates {
-            (Overall, 6.53)
-            (Specificiteit, 5.60)
-            (Volledigheid, 8.00)
-            (Actiegerichtheid, 7.27)
-            (Consistentie, 6.61)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (Overall,          6.53) +- (0, 1.70)
+            (Specificiteit,    5.60) +- (0, 1.64)
+            (Volledigheid,     8.00) +- (0, 1.31)
+            (Actiegerichtheid, 7.27) +- (0, 1.71)
+            (Consistentie,     6.61) +- (0, 0)
         };
-        \addplot coordinates {
-            (Overall, 6.04)
-            (Specificiteit, 4.67)
-            (Volledigheid, 6.67)
-            (Actiegerichtheid, 7.47)
-            (Consistentie, 6.82)
+        \addplot+[error bars/.cd, y dir=both, y explicit]
+        coordinates {
+            (Overall,          6.04) +- (0, 1.59)
+            (Specificiteit,    4.67) +- (0, 2.09)
+            (Volledigheid,     6.67) +- (0, 1.23)
+            (Actiegerichtheid, 7.47) +- (0, 1.19)
+            (Consistentie,     6.82) +- (0, 0)
         };
         \legend{Mastra, OpenAI, n8n}
         \end{axis}
     \end{tikzpicture}
-    \caption{Gemiddelde scores per beoordelingsdimensie over alle testcases}
+    \caption[Scores per beoordelingsdimensie]{Gemiddelde scores per beoordelingsdimensie over alle testcases (foutbalken = $\sigma$; geen $\sigma$ beschikbaar voor Consistentie). Hieruit blijkt dat Mastra het sterkst scoort op specificiteit, volledigheid en actiegerichtheid, terwijl n8n op alle dimensies lager uitkomt.}
     \label{fig:dimensies-per-agent}
 \end{figure}
 \FloatBarrier
@@ -205,8 +215,10 @@ De vijf testcases worden hieronder afzonderlijk besproken. Per testcase wordt ee
 \subsection{React minor (18.2.0 → 18.3.0)}
 \label{subsec:tc-react}
  
-\textbf{Verwachte output:} de agent dient te vermelden dat deze release functioneel identiek is aan 18.2.0, uitsluitend deprecatiewaarschuwingen toevoegt (o.a. \texttt{ReactDOM.render}, \texttt{ReactDOM.hydrate}, \texttt{defaultProps} op functiecomponenten), en dat de update veilig is.
- 
+\textbf{Verwachte output:} de agent dient te vermelden dat deze release functioneel identiek is aan 18.2.0, uitsluitend deprecation warnings toevoegt, en dat de update veilig is.
+
+Voorbeelden zijn onder meer \texttt{ReactDOM.render}, \texttt{ReactDOM.hydrate} en \texttt{defaultProps} op functiecomponenten.
+
 \textbf{Resultaten:} Mastra behaalt een gemiddelde overallscore van 8,25 en scoort het best op deze testcase. De agent identificeert de deprecaties correct en vermeldt dat er geen breaking changes zijn. In twee van drie runs noemt Mastra echter \texttt{findDOMNode} en \texttt{test-utils} als deprecated, wat niet terugkomt in de officiële changelog -- een voorbeeld van lichte hallucinatie. OpenAI scoort gemiddeld 5,60 en verzint in twee van drie runs nieuwe functies die helemaal niet in React 18.3.0 zijn geïntroduceerd (o.a.\ \texttt{useTransition} en \texttt{startTransition}, die al in React 18.0 bestonden). n8n (gem.\ 5,05) geeft in de meeste runs een sjabloonmatige output waarbij alle secties als ``None in this release'' worden ingevuld, waardoor de relevante deprecatieinformatie volledig ontbreekt.
 
 \subsection{Next.js minor (14.1.0 → 14.2.0)}
@@ -214,14 +226,14 @@ De vijf testcases worden hieronder afzonderlijk besproken. Per testcase wordt ee
  
 \textbf{Verwachte output:} de agent dient de Turbopack-stabilisering, de drastische geheugenreductie bij production builds (van $\sim$2,2\,GB naar $<$190\,MB), de verbeterde hydration error messages en het nieuwe \texttt{staleTimes}-configuratieveld te vermelden. Er zijn geen breaking changes.
  
-\textbf{Resultaten:} Dit is de moeilijkste minor-testcase, met de laagste scores voor alle drie de agents. Mastra behaalt een gemiddelde overallscore van 6,22, maar hallucineerde in twee runs breaking changes die niet in de changelog voorkomen (o.a.\ de verwijdering van de \texttt{squoosh}-afhankelijkheid). OpenAI scoort gemiddeld 5,70 en vermeldt eveneens incorrecte breaking changes. Beide agents missen de kernboodschap over de geheugenverbetering, die in productie potentieel de meeste waarde heeft. n8n (gem.\ 4,70) geeft de meest oppervlakkige output en mist migratiestappen in twee van drie runs.
+\textbf{Resultaten:} Dit is de moeilijkste minor-testcase, met de laagste scores voor de drie agents. Mastra behaalt een gemiddelde overallscore van 6,22, maar hallucineerde in twee runs breaking changes die niet in de changelog voorkomen (o.a.\ de verwijdering van de \texttt{squoosh}-afhankelijkheid). OpenAI scoort gemiddeld 5,70 en vermeldt eveneens incorrecte breaking changes. Beide agents missen de kernboodschap over de geheugenverbetering, die in productie potentieel de meeste waarde heeft. n8n (gem.\ 4,70) geeft de meest oppervlakkige output en mist migratiestappen in twee van drie runs.
 
 \subsection{TypeScript major (4.9.5 → 5.0.4)}
 \label{subsec:tc-typescript}
  
 \textbf{Verwachte output:} de agent dient de nieuwe ECMAScript Stage~3 decorators, de incompatibiliteit met legacy decorator-bibliotheken (\texttt{experimentalDecorators: true} blijft vereist voor NestJS/TypeORM), de deprecated tsconfig-opties, de gewijzigde minimumversies en het correct veiligheidsoordeel \textit{With caution} te vermelden.
  
-\textbf{Resultaten:} Alle drie de agents herkennen dat het om een risicovolle major update gaat. Mastra (gem.\ 6,65) en n8n (gem.\ 5,63) geven het juiste oordeel \textit{With caution}; OpenAI geeft in alle drie de runs het oordeel \textit{No}, wat te conservatief is. De nieuwe ECMAScript decorators -- het meest impactvolle onderdeel van TypeScript 5.0 -- worden door Mastra wel vernoemd, maar ontbreken bij n8n en worden door OpenAI slechts gedeeltelijk beschreven. De specifieke impact op legacy-bibliotheken (NestJS, TypeORM, Angular) wordt door geen enkele agent voldoende concreet uitgewerkt.
+\textbf{Resultaten:} Alle drie de agents herkennen dat het om een risicovolle major update gaat. Mastra (gem.\ 6,65) en n8n (gem.\ 5,63) geven het juiste oordeel \textit{With caution}; OpenAI geeft in alle drie de runs het oordeel \textit{No}, wat te conservatief is. De nieuwe ECMAScript decorators \textit{het meest impactvolle onderdeel van TypeScript 5.0} worden door Mastra wel vernoemd, maar ontbreken bij n8n en worden door OpenAI slechts gedeeltelijk beschreven. De specifieke impact op legacy-bibliotheken (NestJS, TypeORM, Angular) wordt door geen enkele agent voldoende concreet uitgewerkt.
 
 \subsection{Zod patch (3.22.3 → 3.22.4)}
 \label{subsec:tc-zod}
@@ -233,23 +245,25 @@ De vijf testcases worden hieronder afzonderlijk besproken. Per testcase wordt ee
 \subsection{Tailwind CSS minor (3.3.0 → 3.4.0)}
 \label{subsec:tc-tailwind}
  
-\textbf{Verwachte output:} de agent dient de uitgebreide set nieuwe utilities te benoemen: dynamische viewport-eenheden (\texttt{dvh}, \texttt{lvh}, \texttt{svh}), de \texttt{has-*}-variant, \texttt{size-*}-utilities, \texttt{text-balance}/\texttt{text-pretty}, subgrid-ondersteuning en de uitgebreide opaciteitsschaal. Er zijn geen breaking changes.
+\textbf{Verwachte output:} de agent dient de uitgebreide set nieuwe utilities te benoemen: dynamische viewport-eenheden (\texttt{dvh}, \texttt{lvh}, \texttt{svh}), de \texttt{has-*}-variant, \texttt{size-*}-utilities, \texttt{text-balance}/\texttt{text-pretty}, subgrid-ondersteuning en de uitgebreide doorzichtheidsschaal. Er zijn geen breaking changes.
  
 \textbf{Resultaten:} Mastra domineert duidelijk met een gemiddelde overallscore van 8,85 -- de hoogste score voor enige agent op enige testcase. Mastra haalt live changelog-data op via de \texttt{fetch-npm-info}-tool en slaagt erin de meeste verwachte utilities correct te benoemen. OpenAI (gem.\ 5,48) mist het overgrote deel van de nieuwe functies en noemt ten onrechte breaking changes. n8n (gem.\ 6,02) vermeldt in twee runs gefabriceerde details over een ``devtools-integratie'' die niet in de officiële changelog staat (\textit{fabricated\_details: true}).
 
 \section{Analyse per agent}
 \label{sec:analyse-per-agent}
  
-\textbf{Mastra} presteert het sterkst over alle testcases en dimensies. Alle drie de agents beschikken over dezelfde tools -- een npm-informatietool en een webzoektool -- maar Mastra verwerkt de opgehaalde tool-output structureel effectiever en integreert die beter in de uiteindelijke respons. Dit verklaart de grote voorsprong bij de \texttt{tailwind\_minor}-testcase en de goede prestaties bij \texttt{react\_minor}. De keerzijde is de hogere latency (gem.\ 10,94\,s, p95 = 15,79\,s), wat in een interactieve dashboardcontext merkbaar is. Mastra hallucineert ook sporadisch details die niet in de changelog staan, wat aangeeft dat de tool-output niet altijd volledig is en de agent soms leegtest aanvult met niet-geverifieerde informatie.
+\textbf{Mastra} presteert het sterkst over alle testcases en dimensies. De drie agents beschikken over dezelfde tools een npm-informatietool en een webzoektool maar Mastra verwerkt de opgehaalde tool-output structureel effectiever en integreert die beter in de uiteindelijke respons. Dit verklaart de grote voorsprong bij de \texttt{tailwind\_minor}-testcase en de goede prestaties bij \texttt{react\_minor}. De keerzijde is de hogere latency (gem.\ 10,94\,s, p95 = 15,79\,s), wat in een interactieve dashboardcontext merkbaar is. Mastra hallucineert ook sporadisch details die niet in de changelog staan, wat aangeeft dat de tool-output niet altijd volledig is en de agent soms ontbrekende informatie aanvult met niet-geverifieerde informatie.
 
-\textbf{OpenAI} levert de snelste responses (gem.\ 4,34\,s) en scoort uitstekend bij de \texttt{zod\_patch}-testcase, maar presteert beduidend zwakker wanneer de update rijk is aan nieuwe functies of subtiele details (\texttt{tailwind\_minor}, \texttt{react\_minor}). Hoewel de variant over dezelfde tools beschikt als Mastra, lijkt de orchestratie de opgehaalde informatie minder volledig te benutten, wat resulteert in meer hallucinaties en onvolledige secties. Het incorrecte \textit{No}-oordeel bij de TypeScript major update (in plaats van \textit{With caution}) is een kwalitatief significante fout: developers zouden op basis van dat oordeel de update mogelijk vermijden terwijl ze hem met aangepaste configuratie veilig kunnen doorvoeren.
+\textbf{OpenAI} levert de snelste responses (gem.\ 4,34\,s) en scoort uitstekend bij de \texttt{zod\_patch} testcase. Tegelijk presteert de variant beduidend zwakker wanneer de update rijk is aan nieuwe functies of subtiele details, zoals bij \texttt{tailwind\_minor} en \texttt{react\_minor}.
+
+Hoewel de variant over dezelfde tools beschikt als Mastra, lijkt de orchestratie de opgehaalde informatie minder volledig te benutten, wat resulteert in meer hallucinaties en onvolledige secties. Het incorrecte \textit{No}-oordeel bij de TypeScript major update (in plaats van \textit{With caution}) is een kwalitatief significante fout: developers zouden op basis van dat oordeel de update mogelijk vermijden terwijl ze hem met aangepaste configuratie veilig kunnen doorvoeren.
 
 \textbf{n8n} presteert het laagst op specificiteit (4,67) en volledigheid (6,67). De agent geeft in de meeste runs een structureel correcte output, maar de inhoud is schaars: bij de \texttt{react\_minor}- en \texttt{nextjs\_minor}-testcases worden alle secties als leeg gerapporteerd, ook al bevat de update relevante informatie. n8n haalt ook de laagste score op het aanwezig zijn van migratiestappen (66,67\,\% tegenover 86,67\,\% voor Mastra en 100\,\% voor OpenAI). Anderzijds is de consistentiescore (6,82) iets hoger dan die van OpenAI (6,61), wat aangeeft dat de outputs van n8n minder variëren -- al is dat deels te verklaren doordat de outputs structureel te oppervlakkig zijn.
 
 \section{Interpretatie van de resultaten}
 \label{sec:interpretatie-resultaten}
 
-De benchmarkresultaten tonen aan dat de kwaliteit van AI-gestuurde dependency-analyse sterk afhangt van de implementatievorm. Agents die live data ophalen (Mastra) presteren structureel beter op inhoudelijke dimensies, maar brengen een hogere latency met zich mee. Agents zonder live data-toegang (OpenAI) zijn sneller en structureel consistent, maar vertonen meer hallucinaties bij informatie-rijke updates.
+De benchmarkresultaten tonen aan dat de kwaliteit van AI-gestuurde dependency analyse sterk afhangt van de implementatievorm. Hoewel zowel (Mastra) als (OpenAI) gebruikmaken van dezelfde ondersteunende tools, verschilt de manier waarop de opgehaalde informatie wordt georkestreerd en verwerkt. Mastra presteert structureel beter op inhoudelijke dimensies, maar brengt een hogere latency met zich mee. OpenAI is sneller en vaak structureel consistent, maar vertoont meer hallucinaties bij informatie rijke updates.
 
 Een opvallende bevinding is dat alle varianten het best presteren op de \texttt{zod\_patch}-testcase (scores 8,78--9,30), niet omdat die inhoudelijk het rijkst is, maar omdat het ontbreken van publieke patchnotes paradoxaal genoeg de hallucinatiedruk verlaagt: er is minder ruimte om foutieve details te introduceren. De moeilijkste testcase blijkt de \texttt{nextjs\_minor}-update, waar alle agents incorrecte breaking changes rapporteren -- vermoedelijk omdat de grens tussen ``aanzienlijke verbetering'' en ``potentieel brekende wijziging'' moeilijker correct te interpreteren is, zelfs wanneer de changelog beschikbaar is.
 
