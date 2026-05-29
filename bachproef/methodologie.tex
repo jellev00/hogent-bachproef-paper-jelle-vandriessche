@@ -26,14 +26,14 @@
 %% Maak voor elke fase (behalve het literatuuronderzoek) een NIEUW HOOFDSTUK aan
 %% en geef het een gepaste titel.
 
-Dit onderzoek volgt de opzet van een vergelijkende studie met proof-of-concept, aangevuld met literatuuronderzoek en een requirements-analyse binnen een concrete bedrijfscontext. Het doel is om enerzijds het probleem en de oplossingsruimte rond dependencybeheer in kaart te brengen, en anderzijds een apart dashboard-prototype te bouwen en technisch te evalueren binnen een realistische ontwikkelomgeving.
+Dit onderzoek volgt de opzet van een vergelijkende studie met proof-of-concept, aangevuld met literatuuronderzoek en een requirements-analyse binnen een concrete bedrijfscontext. Het doel is om enerzijds het probleem en de oplossingsruimte rond dependencybeheer in kaart te brengen, en anderzijds een apart dashboard prototype te bouwen en technisch te evalueren binnen een realistische ontwikkelomgeving.
 
 \section{Fase 1 - Verdiepende literatuurstudie en probleemverkenning}
 \label{sec:fase1}
 
 In de eerste fase van de bachelorproef wordt de probleemcontext verder uitgediept aan de hand van een systematische literatuurstudie rond dependency management, kwetsbare dependencies, technische schuld en bestaande dependencybots. Daarnaast wordt vakliteratuur over AI-agents en workflow-automatisering bestudeerd om na te gaan welke concepten en benaderingen relevant zijn voor een AI-gestuurd dependency-dashboard.
 
-Tijdens deze fase worden ook één of enkele representatieve projecten van Springbok geselecteerd en geanalyseerd (projectstructuur, gebruikte technologieën, dependency-ecosystemen, huidige processen rond updates). De belangrijkste deliverables zijn:
+Tijdens deze fase worden ook één of enkele representatieve projecten van Springbok geselecteerd en geanalyseerd (projectstructuur, gebruikte technologieën, dependency ecosystemen, huidige processen rond updates). De belangrijkste deliverables zijn:
 \begin{itemize}
     \item een uitgewerkte en geactualiseerde literatuurstudie;
     \item een scherpere probleemomschrijving toegespitst op de gekozen bedrijfscontext en projecten;
@@ -59,7 +59,7 @@ Op basis van deze requirements wordt vervolgens een systeemarchitectuur ontworpe
 \section{Fase 3 - Implementatie van het proof-of-concept}
 \label{sec:fase3}
 
-In fase 3 wordt de ontworpen architectuur omgezet in een werkend proof-of-concept. De kern bestaat uit een afzonderlijke webapplicatie waarin per project dependencies worden bijgehouden en verrijkt met informatie uit externe bronnen, zoals package-registries en repositorygegevens. De applicatie wordt opgezet in een realistische context, zodat de proof-of-concept kan worden getest op basis van echte projectgegevens en representatieve update-informatie.
+In fase 3 wordt de ontworpen architectuur omgezet in een werkend proof-of-concept. De kern bestaat uit een afzonderlijke webapplicatie waarin per project dependencies worden bijgehouden en verrijkt met informatie uit externe bronnen, zoals package registries en repositorygegevens. De applicatie wordt opgezet in een realistische context, zodat de proof-of-concept kan worden getest op basis van echte projectgegevens en representatieve update-informatie.
 
 Parallel wordt een AI-ondersteunde analysekern geïntegreerd die changelogs, release notes en andere relevante update-informatie verwerkt en omzet naar compacte samenvattingen en indicaties van de aard van een update. In deze fase worden meerdere varianten van die AI-integratie uitgewerkt, zodat later een gerichte vergelijking kan worden gemaakt tussen verschillende vormen van agent- en workflow-orkestratie. De frontend visualiseert vervolgens de verzamelde dependencygegevens, de AI-gegenereerde toelichting en de voorgestelde prioritering. Deliverables van fase 3 zijn:
 \begin{itemize}
