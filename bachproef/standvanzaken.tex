@@ -118,6 +118,11 @@ In de literatuur over agentarchitecturen keren telkens dezelfde bouwstenen terug
 
 Voor het type probleem dat in deze bachelorproef centraal staat, is dat relevant omdat dependencyinformatie vaak niet volledig in een bron zit. Een agent moet daarom kunnen beginnen bij een primaire bron en indien nodig overschakelen naar aanvullende context. De literatuur ondersteunt zo het idee dat agentgedrag niet noodzakelijk draait om autonomie als doel op zich, maar om gecontroleerde iteratie in informatieverzameling en interpretatie.
 
+\subsection{LLM-as-a-Judge als evaluatiemethode}
+\label{subsec:llm-as-a-judge}
+
+Naast het gebruik van taalmodellen als generatieve componenten worden LLM's ook steeds vaker ingezet als evaluatiemethode voor output van andere modellen. \textcite{Zheng2023} tonen aan dat sterke LLM-judges goed kunnen overeenkomen met menselijke voorkeuren en zo een schaalbare en verklaarbare evaluatiemethode vormen voor open-ended output. In hun onderzoek naar MT-Bench en Chatbot Arena stellen zij vast dat LLM-as-a-Judge een praktisch alternatief biedt voor klassieke menselijke evaluatie, die vaak duur en moeilijk schaalbaar is \autocite{Zheng2023}. Tegelijk wijzen zij op bekende beperkingen, zoals positiebias en een neiging tot zelfbevooroordeeldheid wanneer het judge model gelijkaardig is aan het geëvalueerde model. Deze beperkingen kunnen worden ingeperkt door een lage temperatuurinstelling en een vaste beoordelingsrubric te hanteren \autocite{Zheng2023}.
+
 \subsection{Code gedreven versus low-code orkestratie}
 
 De manier waarop zulke agentische processen worden georganiseerd, verschilt sterk tussen code gedreven en low-code benaderingen. Code gedreven systemen bieden doorgaans meer controle over de volgorde van stappen, de dataflow en de fouthandeling, terwijl low-code platformen nadruk leggen op visuele samenstelling, sneller configuratie en toegankelijkheid voor een breder profiel van gebruikers \textcite{Wali2025}. Beide benaderingen kunnen nuttig zijn, maar ze leggen andere accenten in termen van flexibiliteit, transparantie en onderhoudbaarheid.

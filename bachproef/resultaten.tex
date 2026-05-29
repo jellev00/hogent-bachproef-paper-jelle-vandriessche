@@ -26,7 +26,9 @@ In deze benchmark is het judge-model \texttt{gpt-4o-mini} geconfigureerd met een
     \item \textbf{Feitendekking} (15\,\% gewicht): meet hoeveel van de vooraf gedefinieerde verwachte feiten (\textit{expected facts}) de agent correct en volledig vermeldt. Hiermee wordt de output getoetst aan de grondwaarheid uit de officiële changelog.
 \end{enumerate}
 
-De \textit{LLM-as-a-Judge} kent deze scores toe door de gegenereerde output semantisch te vergelijken met de verwachte inhoud per testcase. Daarbij wordt nagegaan in welke mate de agent concrete versie-informatie vermeldt, relevante wijzigingen correct samenvat, alle verwachte inhoudelijke onderdelen opneemt en feiten uit de officiële changelog correct weergeeft. De beoordeling is dus niet gebaseerd op eenvoudige trefwoorddetectie, maar op de vraag of de output inhoudelijk overeenkomt met wat een developer op basis van de changelog zou moeten weten.
+De \textit{LLM-as-a-Judge} kent deze scores toe op basis van een vaste beoordelingsprompt waarin per testcase de verwachte feiten, de vereiste outputstructuur en de beoordelingscriteria expliciet worden meegegeven. De judge vergelijkt de gegenereerde output dus niet alleen semantisch met de officiële changelog, maar beoordeelt ook of de response voldoende specifiek, volledig en actiegericht is volgens een vooraf vastgelegde rubric. De score is bijgevolg een modelgestuurde interpretatie van inhoudelijke overeenkomst en bruikbaarheid, en geen eenvoudige trefwoordtelling.
+
+Het model werd dus niet apart getraind op deze benchmark, maar beoordeelde elke output op basis van de meegegeven instructies, verwachte feiten en scoringrubric.
 
 De totale score per run wordt berekend als gewogen gemiddelde:
 
@@ -212,6 +214,15 @@ Figuur~\ref{fig:dimensies-per-agent} vergelijkt de gemiddelde scores per beoorde
 
 Mastra scoort het hoogst op overall (7,81), specificiteit (7,27), volledigheid (8,20) en actiegerichtheid (8,27). De agent haalt ook de hoogste consistentiescore (7,53), wat aangeeft dat de output over meerdere runs stabiel blijft. Het nadeel is de aanzienlijk hogere latency: gemiddeld 10,94\,s tegenover 4,34\,s voor OpenAI. OpenAI scoort beduidend lager op specificiteit (5,60) en actiegerichtheid (7,27), maar is de snelste variant. n8n presteert op alle dimensies het laagst, met name op specificiteit (4,67) en volledigheid (6,67).
 
+\subsection{Statistische vergelijking van de agents}
+\label{subsec:statistische-vergelijking}
+
+Om na te gaan of de waargenomen verschillen tussen de drie agents ook statistisch relevant zijn, werd per scorecategorie een one-way ANOVA uitgevoerd met \textit{agent} als factor. Deze analyse werd apart toegepast op de overall score, specificiteit, volledigheid, actiegerichtheid en latency. De factor \textit{testcase} werd in deze evaluatie niet expliciet gemodelleerd, waardoor de resultaten vooral als een eerste indicatie van groepsverschillen moeten worden geïnterpreteerd.
+
+Voor de overall score werd een significant verschil gevonden tussen de agents (\(F(2,42)=5{,}41\), \(p=0{,}0081\)). Voor specificiteit werd eveneens een significant verschil gevonden (\(F(2,42)=8{,}82\), \(p=0{,}00063\)). Ook voor volledigheid was het verschil statistisch significant (\(F(2,42)=8{,}80\), \(p=0{,}00064\)). Voor actiegerichtheid werd geen statistisch significant verschil gevonden (\(F(2,42)=2{,}11\), \(p=0{,}134\)). Voor latency was het verschil duidelijk significant (\(F(2,42)=26{,}97\), \(p<0{,}001\)).
+
+Omdat de benchmarkscore per testcase discreet is en de testcases inhoudelijk sterk verschillen, moet deze analyse voorzichtig worden geïnterpreteerd. Een two-way ANOVA of mixed model met \textit{testcase} als bijkomende factor zou methodologisch strikter zijn, maar ligt buiten de scope van deze bachelorproef. De huidige analyse volstaat wel om de dominante trends in de benchmarkresultaten te onderbouwen.
+
 \section{Analyse per testcase}
 \label{sec:analyse-per-testcase}
 
@@ -268,8 +279,10 @@ Hoewel de variant over dezelfde tools beschikt als Mastra, lijkt de orchestratie
 \section{Interpretatie van de resultaten}
 \label{sec:interpretatie-resultaten}
 
-De benchmarkresultaten tonen aan dat de kwaliteit van AI-gestuurde dependencyanalyse sterk afhangt van de implementatievorm. Hoewel zowel Mastra als OpenAI gebruikmaken van dezelfde ondersteunende tools, verschilt de manier waarop de opgehaalde informatie wordt georkestreerd en verwerkt. Mastra presteert vooral beter op specificiteit, volledigheid en actiegerichtheid, terwijl OpenAI sneller werkt en in sommige gevallen consistente output levert, maar minder diepgaande en minder accurate samenvattingen produceert bij updates met veel informatie.
+De benchmarkresultaten tonen aan dat de kwaliteit van AI-gestuurde dependencyanalyse sterk afhangt van de implementatievorm. Hoewel Mastra en OpenAI gebruikmaken van dezelfde ondersteunende tools, verschilt de manier waarop de opgehaalde informatie wordt georkestreerd en verwerkt. Mastra scoort vooral beter op specificiteit, volledigheid en actiegerichtheid, terwijl OpenAI sneller werkt en in sommige gevallen consistente output levert, maar minder diepgaande en minder accurate samenvattingen produceert bij updates met veel informatie.
 
-Een opvallende bevinding is dat alle varianten het best presteren op de \texttt{zod\_patch}-testcase (scores 8,78--9,30), niet omdat die inhoudelijk het rijkst is, maar omdat het ontbreken van publieke patchnotes paradoxaal genoeg de hallucinatiedruk verlaagt: er is minder ruimte om foutieve details te introduceren. De moeilijkste testcase blijkt de \texttt{nextjs\_minor}-update, waar alle agents incorrecte breaking changes rapporteren -- vermoedelijk omdat de grens tussen ``aanzienlijke verbetering'' en ``potentieel brekende wijziging'' moeilijker correct te interpreteren is, zelfs wanneer de changelog beschikbaar is.
+De statistische vergelijking bevestigt dit algemene beeld: de verschillen tussen de agents zijn niet enkel descriptief, maar ook zichtbaar op meerdere scorecategorieën. Vooral de combinatie van inhoudelijke kwaliteit en verwerkingstijd laat zien dat de keuze voor een implementatie een duidelijke afweging inhoudt tussen nauwkeurigheid, volledigheid en snelheid.
 
-De resultaten ondersteunen de hypothese dat een AI-gestuurde analyselaag waardevol kan zijn voor dependencybeheer, maar benadrukken tegelijk dat de praktische meerwaarde niet uitsluitend bepaald wordt door het gebruikte taalmodel, maar ook door de beschikbaarheid van live changelog-data, de kwaliteit van de outputstructuur en de robuustheid van de fallbacklogica bij ontbrekende releasenotes. Voor de context van Springbok betekent dit dat de keuze voor een implementatie een afweging vraagt tussen inhoudelijke kwaliteit (Mastra), responssnelheid (OpenAI) en onderhoudseenvoud (n8n).
+Een opvallende bevinding is dat alle varianten het best presteren op de \texttt{zod\_patch}-testcase, niet omdat die inhoudelijk het rijkst is, maar omdat het ontbreken van publieke patchnotes merkwaardig genoeg de hallucinatiedruk verlaagt: er is minder ruimte om foutieve details te introduceren. De moeilijkste testcase blijkt de \texttt{nextjs\_minor}-update, waar alle agents incorrecte breaking changes rapporteren, vermoedelijk omdat de grens tussen een aanzienlijke verbetering en een potentieel brekende wijziging moeilijk correct te interpreteren is, zelfs wanneer de changelog beschikbaar is.
+
+De resultaten ondersteunen de hypothese dat een AI-gestuurde analyselaag waardevol kan zijn voor dependencybeheer, maar benadrukken tegelijk dat de praktische meerwaarde niet uitsluitend bepaald wordt door het gebruikte taalmodel, maar ook door de beschikbaarheid van live changelog data, de kwaliteit van de outputstructuur en de robuustheid van de fallbacklogica bij ontbrekende releasenotes. Voor de context van Springbok betekent dit dat de keuze voor een implementatie een afweging vraagt tussen inhoudelijke kwaliteit, responssnelheid en onderhoudseenvoud.
